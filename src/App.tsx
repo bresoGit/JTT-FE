@@ -30,7 +30,7 @@ const App: React.FC = () => {
         <div className="absolute bottom-[-6rem] left-[-4rem] h-80 w-80 rounded-full bg-black/60 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-[90%] flex-col px-4 py-4 md:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-screen max-w-[95%] flex-col px-2 py-4 md:px-6 lg:px-8">
         <NavHeader />
 
         <main className="mt-4 flex-1 flex flex-col">
