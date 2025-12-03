@@ -55,11 +55,15 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         </div>
       </div>
 
-      <div className="space-y-3">
-        {tips.map((tip) => (
-          <TipCard key={tip.id} tip={tip} />
-        ))}
-        {tips.length === 0 && (
+      {/* Wrapper for scroll + grid */}
+      <div className="max-h-[35rem] overflow-y-auto">
+        {tips.length > 0 ? (
+          <div className="grid grid-cols-2 gap-3 max-[1100px]:grid-cols-1">
+            {tips.map((tip) => (
+              <TipCard key={tip.id} tip={tip} />
+            ))}
+          </div>
+        ) : (
           <div className="rounded-xl border border-dashed border-jack-border bg-black/40 px-4 py-6 text-center text-sm text-slate-400">
             Trenutno nema tipova za ovu razinu rizika. Jack oštri oštricu…
           </div>
