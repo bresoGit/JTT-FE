@@ -54,7 +54,7 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
         </div>
       </div>
 
-      <div className="mt-1 flex items-center justify-between gap-3">
+      <div className="mt-1 flex items-center justify-center gap-3">
         <div className="flex items-center gap-2 text-[11px] text-slate-400">
           <div className="flex h-1.5 w-24 overflow-hidden rounded-full bg-slate-800">
             <div
@@ -63,14 +63,6 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
             />
           </div>
           <span>{tip.confidence}% sigurnosti</span>
-        </div>
-        <div className="flex items-center gap-2 text-[11px] text-slate-500">
-          <button className="rounded-full bg-black/60 px-2 py-1 hover:bg-black/80">
-            👍 Sviđa mi se
-          </button>
-          <button className="rounded-full bg-black/60 px-2 py-1 hover:bg-black/80">
-            💬 Komentiraj
-          </button>
         </div>
       </div>
     </article>

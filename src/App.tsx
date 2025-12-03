@@ -2,63 +2,21 @@
 import React from "react";
 import TipsPanel from "./components/tips/TipsPanel";
 import GuillotinePanel from "./components/guillotine/GuillotinePanel";
-import type { RiskLevel, Tip } from "./types/tips";
+import type { RiskLevel } from "./types/tips";
 import Header from "./components/layout/Header";
 import Sidebar from "./components/layout/Sidebar";
 import Footer from "./components/layout/Footer";
-
-const mockTips: Tip[] = [
-  {
-    id: 1,
-    risk: "LOW",
-    league: "Premier League",
-    match: "Arsenal vs. Brighton",
-    market: "Više od 1.5 gola",
-    odds: 1.32,
-    kickoff: "18:30",
-    confidence: 92,
-  },
-  {
-    id: 2,
-    risk: "MEDIUM",
-    league: "Serie A",
-    match: "Milan vs. Lazio",
-    market: "Obje ekipe daju gol",
-    odds: 1.85,
-    kickoff: "20:45",
-    confidence: 78,
-  },
-  {
-    id: 3,
-    risk: "HIGH",
-    league: "La Liga",
-    match: "Valencia vs. Sevilla",
-    market: "Pobjeda domaćina",
-    odds: 2.35,
-    kickoff: "21:00",
-    confidence: 63,
-  },
-  {
-    id: 4,
-    risk: "LOW",
-    league: "Bundesliga",
-    match: "Bayern vs. Augsburg",
-    market: "1 & više od 1.5 gola",
-    odds: 1.42,
-    kickoff: "15:30",
-    confidence: 89,
-  },
-];
 
 const App: React.FC = () => {
   const [selectedRisk, setSelectedRisk] = React.useState<RiskLevel | "ALL">(
     "ALL"
   );
 
-  const filteredTips =
-    selectedRisk === "ALL"
-      ? mockTips
-      : mockTips.filter((t) => t.risk === selectedRisk);
+  const [selectedDates, setSelectedDates] = React.useState<string[]>(() => {
+    const today = new Date();
+    const iso = today.toISOString().slice(0, 10); // YYYY-MM-DD
+    return [iso]; // default -> danas odabrano
+  });
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-jack-redMuted to-jack-border text-slate-100 overflow-hidden">
@@ -77,14 +35,17 @@ const App: React.FC = () => {
             <TipsPanel
               selectedRisk={selectedRisk}
               onRiskChange={setSelectedRisk}
-              tips={filteredTips}
+              selectedDates={selectedDates}
             />
             <GuillotinePanel />
           </section>
 
           {/* Desno: sidebar */}
           <aside className="mt-4 w-full md:mt-0 md:w-80">
-            <Sidebar />
+            <Sidebar
+              selectedDates={selectedDates}
+              onChangeSelectedDates={setSelectedDates}
+            />
           </aside>
         </main>
 

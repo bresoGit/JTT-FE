@@ -8,9 +8,15 @@ interface DayItem {
   isSpecial: "TOMORROW" | "TODAY" | "YESTERDAY" | null;
 }
 
-const Sidebar: React.FC = () => {
-  const [selectedDates, setSelectedDates] = React.useState<string[]>([]);
+interface SidebarProps {
+  selectedDates: string[];
+  onChangeSelectedDates: (dates: string[]) => void;
+}
 
+const Sidebar: React.FC<SidebarProps> = ({
+  selectedDates,
+  onChangeSelectedDates,
+}) => {
   const { tomorrow, today, yesterday, pastDates } = React.useMemo(() => {
     const startOfToday = startOfDay(new Date());
 
@@ -66,9 +72,13 @@ const Sidebar: React.FC = () => {
   }, []);
 
   const toggleDate = (id: string) => {
-    setSelectedDates((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-    );
+    let next: string[];
+    if (selectedDates.includes(id)) {
+      next = selectedDates.filter((x) => x !== id);
+    } else {
+      next = [...selectedDates, id];
+    }
+    onChangeSelectedDates(next);
   };
 
   const isSelected = (id: string) => selectedDates.includes(id);
