@@ -1,36 +1,13 @@
 // src/components/layout/Header.tsx
 import React from "react";
 import JttLogo from "../../assets/jtt_logo.png";
+import NavHeader from "./NavHeader";
 
 const Header: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Top nav/header */}
-      <header className="flex items-center justify-between rounded-2xl border border-jack-border bg-gradient-to-r from-jack-card via-jack-redMuted/20 to-jack-card px-4 py-3 shadow-jack-soft">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-jack-red to-jack-redMuted text-xl font-black tracking-tight">
-            J
-          </div>
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight md:text-xl">
-              JACK THE TIPSTER
-            </h1>
-            <p className="text-xs text-slate-400 md:text-sm">
-              Dnevni AI tipovi. Ti slažeš listić. Jack brusi rub.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button className="rounded-2xl bg-gradient-to-r from-jack-red to-red-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_26px_rgba(248,113,113,0.9)] ring-1 ring-red-400/70 hover:brightness-110">
-            Postani Premium
-          </button>
-          <div className="hidden items-center gap-2 rounded-2xl border border-jack-border bg-jack-card px-3 py-1.5 text-xs md:flex">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-slate-300">Giljotina spremna</span>
-          </div>
-        </div>
-      </header>
+      <NavHeader />
 
       {/* Hero section */}
       <section className="grid gap-4 rounded-2xl border border-jack-border bg-black/40 p-4 md:grid-cols-2 lg:p-6">
@@ -53,15 +30,13 @@ const Header: React.FC = () => {
               {/* BADGE UNDER LOGO */}
               <div className="mt-4 flex flex-col items-center">
                 <div className="inline-flex items-center gap-2 rounded-full border border-red-500/60 bg-black/70 px-6 py-2 shadow-[0_0_24px_rgba(248,113,113,0.6)]">
-                  {/* Ticket icon above */}
-                  <span className="text-red-300 text-sm opacity-80 mb-1 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
+                  <span className="text-red-300 text-sm opacity-80 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
                     🎫
                   </span>
                   <span className="text-[20px] font-serif font-semibold uppercase tracking-[0.10em] text-red-100">
                     JACK THE TIPSTER
                   </span>
-                  {/* Ticket icon below */}
-                  <span className="text-red-300 text-sm opacity-80 mt-1 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
+                  <span className="text-red-300 text-sm opacity-80 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
                     🎫
                   </span>
                 </div>
