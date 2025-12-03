@@ -4,7 +4,6 @@ import { Routes, Route } from "react-router-dom";
 import TipsPanel from "./components/tips/TipsPanel";
 import GuillotinePanel from "./components/guillotine/GuillotinePanel";
 import type { RiskLevel } from "./types/tips";
-import Header from "./components/layout/Header";
 import Sidebar from "./components/layout/Sidebar";
 import Footer from "./components/layout/Footer";
 import LoginPage from "./pages/LoginPage";

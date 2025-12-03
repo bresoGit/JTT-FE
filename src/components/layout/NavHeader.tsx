@@ -10,7 +10,10 @@ export default function NavHeader() {
   const isRegister = location.pathname === "/registracija";
 
   return (
-    <header className="flex items-center justify-between rounded-2xl border border-jack-border bg-gradient-to-r from-jack-card via-jack-redMuted/20 to-jack-card px-4 py-3 shadow-jack-soft">
+    <header
+      className="flex items-center justify-between rounded-2xl border border-jack-border bg-gradient-to-r from-jack-card via-jack-redMuted/20 to-jack-card px-4 py-3 shadow-jack-soft
+             max-[900px]:flex-col max-[900px]:items-stretch max-[900px]:gap-3"
+    >
       {/* LEFT: logo + auth buttons */}
       <div className="flex items-center gap-3">
         {/* Logo link */}
@@ -68,10 +71,10 @@ export default function NavHeader() {
 
       {/* RIGHT: premium + giljotina status */}
       <div className="flex items-center gap-3">
-        <button className="rounded-2xl bg-gradient-to-r from-jack-red to-red-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_26px_rgba(248,113,113,0.9)] ring-1 ring-red-400/70 hover:brightness-110">
+        {/*  <button className="rounded-2xl bg-gradient-to-r from-jack-red to-red-600 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_26px_rgba(248,113,113,0.9)] ring-1 ring-red-400/70 hover:brightness-110">
           Postani Premium
-        </button>
-        <div className="hidden items-center gap-2 rounded-2xl border border-jack-border bg-jack-card px-3 py-1.5 text-xs md:flex">
+        </button>*/}
+        <div className="flex items-center gap-2 rounded-2xl border border-jack-border bg-jack-card px-3 py-1.5 text-xs">
           <span className="h-2 w-2 rounded-full bg-emerald-400" />
           <span className="text-slate-300">Giljotina spremna</span>
         </div>

@@ -23,13 +23,26 @@ const HeroSection: React.FC = () => {
 
             {/* BADGE UNDER LOGO */}
             <div className="mt-4 flex flex-col items-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-red-500/60 bg-black/70 px-6 py-2 shadow-[0_0_24px_rgba(248,113,113,0.6)]">
+              <div className="flex items-center justify-center gap-2 rounded-full border border-red-500/60 bg-black/70 px-6 py-2 shadow-[0_0_24px_rgba(248,113,113,0.6)]">
                 <span className="text-red-300 text-sm opacity-80 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
                   🎫
                 </span>
-                <span className="text-[20px] font-serif font-semibold uppercase tracking-[0.10em] text-red-100">
+
+                <span
+                  className="
+        flex-1 
+        text-sm 
+        sm:text-base 
+        lg:text-[20px] 
+        font-serif font-semibold 
+        uppercase tracking-[0.10em] 
+        text-red-100 
+        text-center
+      "
+                >
                   JACK THE TIPSTER
                 </span>
+
                 <span className="text-red-300 text-sm opacity-80 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
                   🎫
                 </span>
