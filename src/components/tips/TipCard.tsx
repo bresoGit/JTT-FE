@@ -25,50 +25,72 @@ const riskContainer: Record<RiskLevel, string> = {
 const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
   return (
     <article
-      className={`group flex cursor-pointer flex-col gap-2 rounded-2xl border p-3 text-sm transition hover:border-jack-red/90 hover:brightness-110 ${
-        riskContainer[tip.risk]
-      }`}
+      className={`group flex cursor-pointer flex-col gap-2 rounded-2xl border p-3 text-sm transition hover:border-jack-red/90 hover:brightness-110
+      max-[500px]:p-2 max-[500px]:gap-5 max-[500px]:text-[13px]
+      ${riskContainer[tip.risk]}`}
     >
-      <div className="flex items-center justify-between gap-2">
+      {/* Gornji red: liga + meč + badge */}
+      <div
+        className="flex items-center justify-between gap-2
+        max-[500px]:items-start max-[500px]:gap-1.5"
+      >
         <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-wide text-slate-500">
+          <span className="text-[11px] uppercase tracking-wide text-slate-500 max-[500px]:text-[10px]">
             {tip.league}
           </span>
-          <span className="text-sm font-medium text-slate-100">
+          <span className="text-sm font-medium text-slate-100 max-[500px]:text-[13px]">
             {tip.match}
           </span>
         </div>
         <span
-          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
-            riskColor[tip.risk]
-          }`}
+          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide
+          max-[500px]:text-[10px] max-[500px]:px-2 max-[500px]:py-0.5
+          ${riskColor[tip.risk]}`}
         >
           {riskLabel[tip.risk]}
         </span>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
+      {/* Srednji red: market + koef + početak */}
+      <div
+        className="flex items-center justify-between gap-2
+        max-[500px]:flex-col max-[500px]:items-start max-[500px]:gap-3"
+      >
         <div className="flex flex-col">
-          <span className="text-[11px] text-slate-500">Market</span>
-          <span className="text-sm text-slate-100">{tip.market}</span>
+          <span className="text-[11px] text-slate-500 max-[500px]:text-[10px]">
+            Tip Oklade
+          </span>
+          <span className="text-sm text-slate-100 max-[500px]:text-[13px]">
+            {tip.market}
+          </span>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <span className="block text-[11px] text-slate-400">Koef.</span>
-            <span className="text-base font-semibold text-red-300">
+        <div
+          className="flex items-center gap-4
+          max-[500px]:w-full max-[500px]:justify-between max-[500px]:gap-6"
+        >
+          <div className="text-right max-[500px]:text-left">
+            <span className="block text-[11px] text-slate-400 max-[500px]:text-[10px]">
+              Koef.
+            </span>
+            <span className="text-base font-semibold text-red-300 max-[500px]:text-[14px]">
               {tip.odds.toFixed(2)}
             </span>
           </div>
-          <div className="text-right">
-            <span className="block text-[11px] text-slate-400">Početak</span>
-            <span className="text-sm text-slate-100">{tip.kickoff}</span>
+          <div className="text-right max-[500px]:text-left">
+            <span className="block text-[11px] text-slate-400 max-[500px]:text-[10px]">
+              Početak
+            </span>
+            <span className="text-sm text-slate-100 max-[500px]:text-[13px]">
+              {tip.kickoff}
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="mt-1 flex items-center justify-center gap-3">
-        <div className="flex items-center gap-2 text-[11px] text-slate-300">
-          <div className="flex h-1.5 w-24 overflow-hidden rounded-full bg-slate-800/80">
+      {/* Donji red: confidence bar */}
+      <div className="mt-1 flex items-center justify-center gap-3 max-[500px]:justify-start max-[500px]:mt-0.5">
+        <div className="flex items-center gap-2 text-[11px] text-slate-300 max-[500px]:text-[10px]">
+          <div className="flex h-1.5 w-24 overflow-hidden rounded-full bg-slate-800/80 max-[500px]:w-20">
             <div
               className="h-full bg-gradient-to-r from-emerald-400 via-amber-300 to-red-400"
               style={{ width: `${tip.confidence}%` }}
