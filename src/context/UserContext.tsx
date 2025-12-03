@@ -1,46 +1,51 @@
 // src/context/UserContext.tsx
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  type ReactNode,
+} from "react";
 import type { AppUser } from "../types/user";
+
+interface LoginPayload {
+  user: AppUser;
+  token: string; // raw JWT, no "Bearer " inside
+}
 
 interface UserContextValue {
   user: AppUser | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (payload: { user: AppUser; token: string }) => void;
+  login: (payload: LoginPayload) => void;
   logout: () => void;
 }
 
 const UserContext = createContext<UserContextValue | undefined>(undefined);
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
+export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  // init from localStorage (ako postoji)
-  useEffect(() => {
-    const storedToken = localStorage.getItem("jtt_token");
-    const storedUser = localStorage.getItem("jtt_user");
-
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser: AppUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch {
-        // ako je nešto korumpirano, očisti
-        localStorage.removeItem("jtt_token");
-        localStorage.removeItem("jtt_user");
-      }
+  // ✅ Synchronous init from localStorage
+  const [user, setUser] = useState<AppUser | null>(() => {
+    try {
+      const storedUser = localStorage.getItem("jtt_user");
+      if (!storedUser) return null;
+      return JSON.parse(storedUser) as AppUser;
+    } catch {
+      localStorage.removeItem("jtt_user");
+      return null;
     }
-  }, []);
+  });
 
-  const login = (payload: { user: AppUser; token: string }) => {
-    setUser(payload.user);
-    setToken(payload.token);
-    localStorage.setItem("jtt_token", payload.token);
-    localStorage.setItem("jtt_user", JSON.stringify(payload.user));
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem("jtt_token");
+  });
+
+  const login = ({ user, token }: LoginPayload) => {
+    setUser(user);
+    setToken(token);
+    localStorage.setItem("jtt_token", token);
+    localStorage.setItem("jtt_user", JSON.stringify(user));
   };
 
   const logout = () => {
@@ -52,13 +57,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <UserContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!user && !!token,
-        login,
-        logout,
-      }}
+      value={{ user, token, isAuthenticated: !!user && !!token, login, logout }}
     >
       {children}
     </UserContext.Provider>

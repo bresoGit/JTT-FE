@@ -10,6 +10,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HeroSection from "./components/layout/HeroSection";
 import NavHeader from "./components/layout/NavHeader";
+import UserPage from "./pages/UserPage";
 
 const App: React.FC = () => {
   const [selectedRisk, setSelectedRisk] = React.useState<RiskLevel | "ALL">(
@@ -65,6 +66,7 @@ const App: React.FC = () => {
             />
             <Route path="/prijava" element={<LoginPage />} />
             <Route path="/registracija" element={<RegisterPage />} />
+            <Route path="/profil" element={<UserPage />} />
           </Routes>
         </main>
 

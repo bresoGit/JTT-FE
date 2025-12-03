@@ -6,17 +6,26 @@ interface UserBadgeProps {
   user: AppUser;
   initials: string;
   onLogout: () => void;
+  onProfileClick: () => void;
 }
 
-const UserBadge: React.FC<UserBadgeProps> = ({ user, initials, onLogout }) => {
+const UserBadge: React.FC<UserBadgeProps> = ({
+  user,
+  initials,
+  onLogout,
+  onProfileClick,
+}) => {
   return (
     <div className="flex items-center gap-2 max-[500px]:gap-1">
       {/* Badge with avatar + username */}
-      <div
+      <button
+        type="button"
+        onClick={onProfileClick}
         className="
           inline-flex items-center gap-2 rounded-full border border-jack-border/70 bg-black/70 
           px-3 py-1.5 shadow-[0_0_20px_rgba(248,113,113,0.35)]
           max-[500px]:px-2 max-[500px]:py-1 max-[500px]:gap-1
+          cursor-pointer hover:border-red-500/70 hover:shadow-[0_0_26px_rgba(248,113,113,0.6)]
         "
       >
         <div
@@ -29,7 +38,7 @@ const UserBadge: React.FC<UserBadgeProps> = ({ user, initials, onLogout }) => {
         >
           {initials}
         </div>
-        <div className="flex flex-col leading-tight">
+        <div className="flex flex-col leading-tight text-left">
           <span
             className="
               text-xs font-semibold text-slate-100
@@ -39,7 +48,7 @@ const UserBadge: React.FC<UserBadgeProps> = ({ user, initials, onLogout }) => {
             {user.username}
           </span>
         </div>
-      </div>
+      </button>
 
       {/* Logout */}
       <button

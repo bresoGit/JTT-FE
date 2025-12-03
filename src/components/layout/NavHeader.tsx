@@ -1,11 +1,12 @@
 // src/components/layout/NavHeader.tsx
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import JttLogo from "../../assets/jtt_logo.png";
 import { useUser } from "../../context/UserContext";
 import UserBadge from "../ui/UserBadge";
 
 export default function NavHeader() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useUser();
 
   const isHome = location.pathname === "/";
@@ -79,7 +80,12 @@ export default function NavHeader() {
             </Link>
           </div>
         ) : (
-          <UserBadge user={user} initials={initials} onLogout={logout} />
+          <UserBadge
+            user={user}
+            initials={initials}
+            onLogout={logout}
+            onProfileClick={() => navigate("/profil")}
+          />
         )}
       </div>
 
