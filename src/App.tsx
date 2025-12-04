@@ -4,13 +4,14 @@ import { Routes, Route } from "react-router-dom";
 import TipsPanel from "./components/tips/TipsPanel";
 import GuillotinePanel from "./components/guillotine/GuillotinePanel";
 import type { RiskLevel } from "./types/tips";
+
 import Sidebar from "./components/layout/Sidebar";
 import Footer from "./components/layout/Footer";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import HeroSection from "./components/layout/HeroSection";
+import TicketBuilderPage from "./pages/TicketBuilderPage";
 import NavHeader from "./components/layout/NavHeader";
-import UserPage from "./pages/UserPage";
+import HeroSection from "./components/layout/HeroSection";
 
 const App: React.FC = () => {
   const [selectedRisk, setSelectedRisk] = React.useState<RiskLevel | "ALL">(
@@ -31,7 +32,7 @@ const App: React.FC = () => {
         <div className="absolute bottom-[-6rem] left-[-4rem] h-80 w-80 rounded-full bg-black/60 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex min-h-screen max-w-[95%] flex-col px-2 py-4 md:px-6 lg:px-8">
+      <div className="relative mx-auto flex min-h-screen max-w-[90%] flex-col px-4 py-4 md:px-6 lg:px-8">
         <NavHeader />
 
         <main className="mt-4 flex-1 flex flex-col">
@@ -39,34 +40,32 @@ const App: React.FC = () => {
             <Route
               path="/"
               element={
-                <div className="flex flex-1 flex-col gap-4">
-                  <HeroSection />
+                <div className="flex flex-1 flex-col gap-4 md:flex-row">
+                  {/* Lijevo: tipovi + giljotina */}
+                  <section className="flex-1 space-y-4">
+                    <HeroSection />
+                    <TipsPanel
+                      selectedRisk={selectedRisk}
+                      onRiskChange={setSelectedRisk}
+                      selectedDates={selectedDates}
+                    />
+                    <GuillotinePanel />
+                  </section>
 
-                  <div className="flex flex-1 flex-col gap-4 md:flex-row">
-                    {/* Lijevo: tipovi + giljotina */}
-                    <section className="flex-1 space-y-4">
-                      <TipsPanel
-                        selectedRisk={selectedRisk}
-                        onRiskChange={setSelectedRisk}
-                        selectedDates={selectedDates}
-                      />
-                      <GuillotinePanel />
-                    </section>
-
-                    {/* Desno: sidebar */}
-                    <aside className="mt-4 w-full md:mt-0 md:w-80">
-                      <Sidebar
-                        selectedDates={selectedDates}
-                        onChangeSelectedDates={setSelectedDates}
-                      />
-                    </aside>
-                  </div>
+                  {/* Desno: sidebar */}
+                  <aside className="mt-4 w-full md:mt-0 md:w-80">
+                    <Sidebar
+                      selectedDates={selectedDates}
+                      onChangeSelectedDates={setSelectedDates}
+                    />
+                  </aside>
                 </div>
               }
             />
+            <Route path="/jack" element={<TicketBuilderPage />} />{" "}
+            {/* 👈 NEW */}
             <Route path="/prijava" element={<LoginPage />} />
             <Route path="/registracija" element={<RegisterPage />} />
-            <Route path="/profil" element={<UserPage />} />
           </Routes>
         </main>
 

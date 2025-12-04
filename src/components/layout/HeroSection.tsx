@@ -1,8 +1,23 @@
 // src/components/layout/HeroSection.tsx
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import JttLogo from "../../assets/jtt_logo.png";
+import { useUser } from "../../context/UserContext";
 
 const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+  const { user } = useUser(); // 👈 dobijemo trenutno logiranog usera (ili null)
+
+  const handleStartJack = () => {
+    if (!user) {
+      // nije logiran → vodi na prijavu
+      navigate("/prijava");
+    } else {
+      // logiran → može na graditelja listića
+      navigate("/jack");
+    }
+  };
+
   return (
     <section className="grid gap-4 rounded-2xl border border-jack-border bg-black/40 p-4 md:grid-cols-2 lg:p-6">
       {/* LEFT SIDE — Logo */}
@@ -30,15 +45,15 @@ const HeroSection: React.FC = () => {
 
                 <span
                   className="
-        flex-1 
-        text-sm 
-        sm:text-base 
-        lg:text-[20px] 
-        font-serif font-semibold 
-        uppercase tracking-[0.10em] 
-        text-red-100 
-        text-center
-      "
+                    flex-1 
+                    text-sm 
+                    sm:text-base 
+                    lg:text-[20px] 
+                    font-serif font-semibold 
+                    uppercase tracking-[0.10em] 
+                    text-red-100 
+                    text-center
+                  "
                 >
                   JACK THE TIPSTER
                 </span>
@@ -59,15 +74,15 @@ const HeroSection: React.FC = () => {
         </p>
 
         <h2 className="text-2xl font-bold leading-tight md:text-3xl">
-          Tipovi, ne listići.
+          Tipovi i listići.
           <br className="hidden md:block" />
           Ti biraš – Jack oštri.
         </h2>
 
         <p className="text-sm text-slate-300">
           Jack The Tipster ti svaki dan servira AI filtrirane parove podijeljene
-          po riziku. Ti slažeš listić kod svoje kladionice, a Jack ti pomaže da
-          makneš šum i ostaviš samo ono što ima smisla.
+          po riziku. Ti odabereš parove, a Jack ti pomaže da makneš šum, ostaviš
+          samo ono što ima smisla te dodaje sigurne parove.
         </p>
 
         <ul className="space-y-1 text-xs text-slate-300">
@@ -77,11 +92,11 @@ const HeroSection: React.FC = () => {
         </ul>
 
         <div className="mt-2 flex flex-wrap items-center gap-3">
-          <button className="rounded-2xl bg-jack-red px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_30px_rgba(248,113,113,0.9)] hover:bg-red-600">
+          <button
+            className="rounded-2xl bg-jack-red px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_30px_rgba(248,113,113,0.9)] hover:bg-red-600"
+            onClick={handleStartJack}
+          >
             Pokreni Jacka sada
-          </button>
-          <button className="rounded-2xl border border-jack-border bg-black/40 px-4 py-2 text-[11px] font-semibold text-slate-200 hover:border-jack-red/80 hover:text-red-200">
-            Pogledaj današnje tipove
           </button>
         </div>
       </div>
