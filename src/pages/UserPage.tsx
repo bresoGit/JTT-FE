@@ -20,7 +20,7 @@ interface UserProfileResponse {
 }
 
 const UserPage: React.FC = () => {
-  const { user, token, isAuthenticated, login } = useUser();
+  const { user, token, isAuthenticated } = useUser();
   const navigate = useNavigate();
 
   const [profile, setProfile] = React.useState<UserProfileResponse | null>(
@@ -38,7 +38,7 @@ const UserPage: React.FC = () => {
       : null
   );
 
-  // state za modal i lozinku
+  // modal state
   const [isPwModalOpen, setIsPwModalOpen] = React.useState(false);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -47,58 +47,45 @@ const UserPage: React.FC = () => {
   const [pwSuccess, setPwSuccess] = React.useState<string | null>(null);
   const [pwLoading, setPwLoading] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/"); // or "/prijava"
-    }
-  }, [isAuthenticated, navigate]);
-
-  // ako nije logiran → na prijavu
+  // ako stvarno nisi prijavljen → odi na prijavu
   React.useEffect(() => {
     if (!isAuthenticated) {
       navigate("/prijava");
     }
   }, [isAuthenticated, navigate]);
 
-  // fetch svježeg profila
+  // 🔥 minimalan, uvijek-pozovi /me efekt
   React.useEffect(() => {
-    if (!token) return;
+    // pokušaj uzeti token iz contexta ili iz localStorage
+    const storedToken =
+      token || localStorage.getItem("jtt_auth_token") || undefined;
 
+    // uvijek napravi jedan pokušaj – čak i bez tokena (onda će backend vratiti 401/403,
+    // ali ti ćeš BAREM vidjeti request u Network tabu)
     const fetchProfile = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/users/me`, {
           headers: {
-            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            ...(storedToken ? { Authorization: `Bearer ${storedToken}` } : {}),
           },
         });
 
         if (!res.ok) {
+          // ovdje možeš dobiti 401/403 – ali poziv će postojati
           return;
         }
 
         const data: UserProfileResponse = await res.json();
         setProfile(data);
-
-        // osvježi usera u contextu (opcionalno)
-        login({
-          user: {
-            id: data.id,
-            username: data.username,
-            email: data.email,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            role: data.role,
-          } as any,
-          token,
-        });
       } catch {
-        // ignore
+        // ignore network errors for now
       }
     };
 
     fetchProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+    // prazan dependency array => pozove se SAMO jednom kad se UserPage mounta
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openPasswordModal = () => {
     setPwError(null);
@@ -127,13 +114,21 @@ const UserPage: React.FC = () => {
       return;
     }
 
+    const storedToken =
+      token || localStorage.getItem("jtt_auth_token") || undefined;
+
+    if (!storedToken) {
+      setPwError("Nisi prijavljen. Prijavi se ponovno.");
+      return;
+    }
+
     setPwLoading(true);
     try {
       const res = await fetch(`${BACKEND_URL}/api/users/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${storedToken}`,
         },
         body: JSON.stringify({
           oldPassword,
@@ -153,7 +148,6 @@ const UserPage: React.FC = () => {
       setNewPassword("");
       setRepeatPassword("");
 
-      // mali delay pa zatvori modal
       setTimeout(() => {
         setIsPwModalOpen(false);
         setPwSuccess(null);
@@ -196,7 +190,7 @@ const UserPage: React.FC = () => {
               <div className="text-[11px] uppercase tracking-wide text-slate-500">
                 Email
               </div>
-              <div className="text-slate-100 break-all">{profile.email}</div>
+              <div className="break-all text-slate-100">{profile.email}</div>
             </div>
             <div>
               <div className="text-[11px] uppercase tracking-wide text-slate-500">
@@ -321,7 +315,7 @@ const UserPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={closePasswordModal}
-                  className="rounded-2xl border border-jack-border bg-black/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-200 hover:border-red-400 hover:text-red-200 hover:bg-black/90"
+                  className="rounded-2xl border border-jack-border bg-black/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-200 hover:border-red-400 hover:bg-black/90 hover:text-red-200"
                 >
                   Odustani
                 </button>
