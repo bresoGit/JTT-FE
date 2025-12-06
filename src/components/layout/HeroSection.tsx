@@ -1,19 +1,17 @@
 // src/components/layout/HeroSection.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import JttLogo from "../../assets/jtt_logo.png";
+import JttLogo from "../../assets/jtt_logo.png"; // kasnije možeš promijeniti asset
 import { useUser } from "../../context/UserContext";
 
 const HeroSection: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useUser(); // 👈 dobijemo trenutno logiranog usera (ili null)
+  const { user } = useUser();
 
   const handleStartJack = () => {
     if (!user) {
-      // nije logiran → vodi na prijavu
       navigate("/prijava");
     } else {
-      // logiran → može na graditelja listića
       navigate("/jack");
     }
   };
@@ -32,7 +30,7 @@ const HeroSection: React.FC = () => {
           <div className="relative flex flex-col items-center">
             <img
               src={JttLogo}
-              alt="Jack The Tipster Logo"
+              alt="Jackpot The Ripper Logo"
               className="w-full h-auto object-contain drop-shadow-[0_0_25px_rgba(255,0,0,0.35)]"
             />
 
@@ -40,26 +38,26 @@ const HeroSection: React.FC = () => {
             <div className="mt-4 flex flex-col items-center">
               <div className="flex items-center justify-center gap-2 rounded-full border border-red-500/60 bg-black/70 px-6 py-2 shadow-[0_0_24px_rgba(248,113,113,0.6)]">
                 <span className="text-red-300 text-sm opacity-80 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
-                  🎫
+                  🎰
                 </span>
 
                 <span
                   className="
                     flex-1 
-                    text-sm 
-                    sm:text-base 
-                    lg:text-[20px] 
+                    text-xs 
+                    sm:text-sm 
+                    lg:text-[18px] 
                     font-serif font-semibold 
-                    uppercase tracking-[0.10em] 
+                    uppercase tracking-[0.18em] 
                     text-red-100 
                     text-center
                   "
                 >
-                  JACK THE TIPSTER
+                  JACKPOT THE RIPPER
                 </span>
 
                 <span className="text-red-300 text-sm opacity-80 tracking-widest drop-shadow-[0_0_6px_rgba(248,113,113,0.7)]">
-                  🎫
+                  🎟️
                 </span>
               </div>
             </div>
@@ -70,24 +68,29 @@ const HeroSection: React.FC = () => {
       {/* RIGHT SIDE — Hero content */}
       <div className="flex flex-col justify-center space-y-3 md:pl-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-red-300">
-          Jackov rez
+          Ripperov rez
         </p>
 
         <h2 className="text-2xl font-bold leading-tight md:text-3xl">
-          Tipovi i listići.
+          Jackpot pod giljotinom.
           <br className="hidden md:block" />
-          Ti biraš – Jack oštri.
+          Brojevi, kombinacije i listići pod nožem.
         </h2>
 
         <p className="text-sm text-slate-300">
-          Jack The Tipster ti svaki dan servira AI filtrirane parove podijeljene
-          po riziku. Ti odabereš parove, a Jack ti pomaže da makneš šum, ostaviš
-          samo ono što ima smisla te dodaje sigurne parove.
+          Jackpot The Ripper ti pomaže slagati pametnije loto kombinacije i
+          sportske listiće. AI filtrira brojeve, kombinacije i parove, a ti
+          biraš koliko želiš rezati rizik – od opreznog do totalno krvavog.
         </p>
 
         <ul className="space-y-1 text-xs text-slate-300">
-          <li>• Jasno podijeljeni tipovi: niski, srednji i visoki rizik</li>
-          <li>• Giljotina mod: tvoj listić → dvije AI optimizirane verzije</li>
+          <li>
+            • Fokus na lutriji: predložene kombinacije, filteri i strategije
+          </li>
+          <li>• Sportski listići ostaju: isti alati za parove i koefove</li>
+          <li>
+            • Ripper mod: razreži postojeći listić u optimizirane varijante
+          </li>
           <li>• Free verzija s oglasima ili Premium bez distrakcija</li>
         </ul>
 
@@ -96,8 +99,17 @@ const HeroSection: React.FC = () => {
             className="rounded-2xl bg-jack-red px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_30px_rgba(248,113,113,0.9)] hover:bg-red-600"
             onClick={handleStartJack}
           >
-            Pokreni Jacka sada
+            Pokreni Rippera
           </button>
+          {!user && (
+            <button
+              type="button"
+              onClick={() => navigate("/registracija")}
+              className="rounded-2xl border border-jack-border bg-black/40 px-4 py-2 text-[11px] font-semibold text-slate-200 hover:border-jack-red/80 hover:text-red-200"
+            >
+              Registriraj se za jackpot
+            </button>
+          )}
         </div>
       </div>
     </section>

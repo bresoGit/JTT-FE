@@ -26,6 +26,10 @@ interface BackendTip {
   kickoffAt: string | null;
 }
 
+// ✅ zajednički backend URL (Vite stil)
+const BACKEND_URL =
+  (import.meta as any).env?.VITE_BACKEND_URL ?? "http://localhost:8080";
+
 const TipsPanel: React.FC<TipsPanelProps> = ({
   selectedRisk,
   onRiskChange,
@@ -55,18 +59,11 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
           params.append("risk", selectedRisk);
         }
 
-        // sport je hardkodiran na "nogomet" kako si tražio
-        params.append("sport", "football");
+        // sport hardkodiran na "nogomet" (kako smo dogovorili)
+        params.append("sport", "nogomet");
 
-        // backend base URL iz env-a
-        const baseUrl =
-          (import.meta as any).env?.BACKEND_URL ??
-          (import.meta as any).env?.BACKEND_URL ??
-          "http://localhost:8080";
-
-        const url = baseUrl
-          ? `${baseUrl.replace(/\/+$/, "")}/api/tipovi?${params.toString()}`
-          : `/api/tipovi?${params.toString()}`;
+        const base = BACKEND_URL.replace(/\/+$/, "");
+        const url = `${base}/api/tipovi?${params.toString()}`;
 
         const res = await fetch(url, {
           signal: controller.signal,
@@ -122,10 +119,10 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
       <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold tracking-tight">
-            Današnji tipovi
+            Jackpottovi tipovi
           </h2>
           <p className="text-xs text-slate-400">
-            Filtriraj po riziku i uzmi Jackove dnevne prijedloge.
+            Filtriraj po riziku i pogledaj što je Ripper pripremio za danas.
           </p>
         </div>
 
@@ -156,11 +153,11 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         </div>
       </div>
 
-      {/* Wrapper for scroll + grid */}
+      {/* Wrapper za scroll + grid */}
       <div className="max-h-[35rem] overflow-y-auto">
         {loading && (
           <div className="rounded-xl border border-jack-border bg-black/40 px-4 py-6 text-center text-sm text-slate-400">
-            Jack traži najbolje tipove…
+            Ripper traži najbolje tipove…
           </div>
         )}
 
@@ -180,7 +177,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
 
         {!loading && !error && tips.length === 0 && (
           <div className="rounded-xl border border-dashed border-jack-border bg-black/40 px-4 py-6 text-center text-sm text-slate-400">
-            Trenutno nema tipova za ove filtere. Jack oštri oštricu…
+            Trenutno nema tipova za ove filtere. Ripper još slaže kombinacije…
           </div>
         )}
       </div>
