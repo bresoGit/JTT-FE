@@ -225,7 +225,6 @@ const NewParForm: React.FC<NewParFormProps> = ({
             </div>
           </div>
 
-          {/* Match */}
           <JackDropdown
             label="Utakmica"
             placeholder={
@@ -252,6 +251,7 @@ const NewParForm: React.FC<NewParFormProps> = ({
             error={matchesError || undefined}
             searchable
             searchPlaceholder="Traži utakmicu..."
+            variant="match"
           />
 
           {/* Market */}
