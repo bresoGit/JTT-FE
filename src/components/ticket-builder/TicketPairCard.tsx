@@ -6,26 +6,27 @@ interface TicketPairCardProps {
   pair: TicketPair;
   index: number;
   onDelete?: () => void;
+  disabledActions?: boolean; // NEW
 }
 
 const TicketPairCard: React.FC<TicketPairCardProps> = ({
   pair,
   index,
   onDelete,
+  disabledActions,
 }) => {
   const sportIcon = pair.sport === "FOOTBALL" ? "⚽" : "🏀";
   const sportLabel = pair.sport === "FOOTBALL" ? "Nogomet" : "Košarka";
 
   const { leagueName, leagueLogo, homeLogo, awayLogo, timestamp } = pair;
 
-  // 🧠 normalize en dash → hyphen, then split
   const normalizedLabel = pair.matchLabel
     .replace(/ – /g, " - ")
     .replace(/–/g, "-");
 
   const [rawHome, rawAway] = normalizedLabel.split(" - ");
-  const homeName = (rawHome ?? "").trim() || "Domaćin";
-  const awayName = (rawAway ?? "").trim() || "Gost";
+  const homeName = (rawHome ?? "").trim() || pair.homeName || "Domaćin";
+  const awayName = (rawAway ?? "").trim() || pair.awayName || "Gost";
 
   const formatTime = (ts?: number) => {
     if (!ts) return undefined;
@@ -77,15 +78,21 @@ const TicketPairCard: React.FC<TicketPairCardProps> = ({
         {onDelete && (
           <button
             type="button"
-            onClick={onDelete}
-            className="
+            onClick={disabledActions ? undefined : onDelete}
+            disabled={disabledActions}
+            className={`
               rounded-full border border-red-500/50 bg-black/70
               px-2 py-1
               text-[10px] text-red-300
               hover:border-red-400 hover:bg-red-900/30 hover:text-red-200
               transition
               max-[500px]:px-1.5
-            "
+              ${
+                disabledActions
+                  ? "opacity-50 cursor-not-allowed hover:border-red-500/50 hover:bg-black/70 hover:text-red-300"
+                  : ""
+              }
+            `}
             aria-label="Ukloni par"
             title="Ukloni par"
           >

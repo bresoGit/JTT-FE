@@ -1,3 +1,4 @@
+// src/types/ticket.ts
 export type SportType = "FOOTBALL" | "BASKETBALL";
 
 export interface TicketPair {
@@ -21,10 +22,15 @@ export interface TicketPair {
   homeLogo?: string | null;
   awayLogo?: string | null;
 
-  // NEW - to match TicketPairDto
+  // match meta (to align with TicketPairDto)
   homeName?: string;
   awayName?: string;
   homeId?: string;
   awayId?: string;
   season?: string;
+
+  // AI scan result
+  newMarketLabel?: string | null;
+  newOdds?: number | null;
+  explanationOfChange?: string | null;
 }
