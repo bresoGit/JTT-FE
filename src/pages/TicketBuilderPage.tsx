@@ -38,6 +38,7 @@ const TicketBuilderPage: React.FC = () => {
   const { pairs, addPair, clearTicket, removePair } = useTicket();
 
   const [isAdding, setIsAdding] = React.useState(false);
+  const [isSubmittingTicket, setIsSubmittingTicket] = React.useState(false);
   const [newPar, setNewPar] = React.useState<NewParFormState>(defaultNewPar);
   const [selectedDayOffset, setSelectedDayOffset] = React.useState<0 | 1 | 2>(
     0
@@ -302,6 +303,50 @@ const TicketBuilderPage: React.FC = () => {
     !!newPar.marketCode &&
     !!newPar.odds;
 
+  const handleSubmitTicket = async () => {
+    if (pairs.length === 0 || isSubmittingTicket) return;
+
+    setIsSubmittingTicket(true);
+    try {
+      const base = BACKEND_URL.replace(/\/+$/, "");
+      const res = await fetch(`${base}/api/natjecanja/tickets`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          pairs: pairs.map((p) => ({
+            sport: p.sport,
+            matchId: p.matchId,
+            matchLabel: p.matchLabel,
+            marketCode: p.marketCode,
+            marketLabel: p.marketLabel,
+            odds: p.odds,
+            timestamp: p.timestamp ?? null,
+            leagueId: p.leagueId ?? null,
+            leagueName: p.leagueName ?? null,
+            leagueLogo: p.leagueLogo ?? null,
+            homeLogo: p.homeLogo ?? null,
+            awayLogo: p.awayLogo ?? null,
+          })),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`Greška pri slanju listića: ${res.status}`);
+      }
+
+      // nakon uspješnog slanja očisti listić
+      clearTicket();
+      // ovdje možeš kasnije ubaciti toast
+    } catch (err) {
+      console.error(err);
+      // TODO: toast error poruka
+    } finally {
+      setIsSubmittingTicket(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {/* Header */}
@@ -324,6 +369,9 @@ const TicketBuilderPage: React.FC = () => {
           onOpenForm={handleOpenForm}
           onClearTicket={clearTicket}
           onRemovePair={removePair}
+          onSubmitTicket={handleSubmitTicket}
+          canSubmitTicket={pairs.length > 0}
+          isSubmittingTicket={isSubmittingTicket}
         />
 
         {/* RIGHT: new par form */}

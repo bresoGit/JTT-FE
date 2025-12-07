@@ -10,6 +10,10 @@ interface TicketSummaryPanelProps {
   onOpenForm: () => void;
   onClearTicket: () => void;
   onRemovePair: (id: string) => void;
+
+  onSubmitTicket: () => void;
+  canSubmitTicket: boolean;
+  isSubmittingTicket: boolean;
 }
 
 const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
@@ -19,7 +23,12 @@ const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
   onOpenForm,
   onClearTicket,
   onRemovePair,
+  onSubmitTicket,
+  canSubmitTicket,
+  isSubmittingTicket,
 }) => {
+  const disabledSubmit = !canSubmitTicket || isSubmittingTicket;
+
   return (
     <section className="flex flex-col rounded-2xl border border-jack-border bg-black/50 p-4 shadow-jack-soft">
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -28,7 +37,7 @@ const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
             Tvoj listić
           </h2>
           <p className="text-[11px] text-slate-400">
-            Dodaj parove i kasnije ih pošalji kroz giljotinu.
+            Dodaj parove i pošalji listić Jacku na giljotinu.
           </p>
         </div>
         <div className="rounded-xl border border-jack-border bg-black/70 px-3 py-1.5 text-[15px] text-slate-300 max-[500px]:text-[12px]">
@@ -61,16 +70,34 @@ const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
         )}
       </div>
 
-      <div className="mt-3 flex justify-between gap-2">
-        {pairs.length > 0 && (
-          <button
-            type="button"
-            onClick={onClearTicket}
-            className="rounded-2xl border border-jack-border bg-black/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-300 hover:border-red-400 hover:bg-black/90 hover:text-red-200"
-          >
-            Očisti listić
-          </button>
-        )}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          {pairs.length > 0 && (
+            <button
+              type="button"
+              onClick={onClearTicket}
+              className="rounded-2xl border border-jack-border bg-black/70 px-4 py-2 text-[10px] font-semibold uppercase tracking-wide text-slate-300 hover:border-red-400 hover:bg-black/90 hover:text-red-200"
+            >
+              Očisti listić
+            </button>
+          )}
+
+          {pairs.length > 0 && (
+            <button
+              type="button"
+              onClick={onSubmitTicket}
+              disabled={disabledSubmit}
+              className={`rounded-2xl px-4 py-2 text-[10px] font-semibold uppercase tracking-wide transition
+                ${
+                  disabledSubmit
+                    ? "cursor-not-allowed border border-slate-700 bg-black/60 text-slate-500"
+                    : "border border-jack-border bg-gradient-to-r from-red-900/60 via-red-700/70 to-red-900/60 text-red-50 shadow-[0_0_20px_rgba(248,113,113,0.85)] hover:brightness-110"
+                }`}
+            >
+              {isSubmittingTicket ? "Šaljem listić..." : "Pošalji listić"}
+            </button>
+          )}
+        </div>
 
         <button
           type="button"
