@@ -267,11 +267,23 @@ const TicketBuilderPage: React.FC = () => {
     const newItem: TicketPair = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       sport: newPar.sport,
+
       matchId: match.id,
       matchLabel: match.label,
+
       marketCode: newPar.marketCode,
       marketLabel,
       odds: oddsNumber,
+
+      // enriched data:
+      timestamp: match.timestamp,
+
+      leagueId: newPar.leagueId,
+      leagueName: match.leagueName ?? selectedLeague?.name ?? undefined,
+      leagueLogo: selectedLeague?.logo ?? null,
+
+      homeLogo: match.homeLogo ?? null,
+      awayLogo: match.awayLogo ?? null,
     };
 
     addPair(newItem);

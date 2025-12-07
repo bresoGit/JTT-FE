@@ -9,7 +9,7 @@ interface TicketSummaryPanelProps {
   isAdding: boolean;
   onOpenForm: () => void;
   onClearTicket: () => void;
-  onRemovePair: (id: string) => void; // 👈 NOVO
+  onRemovePair: (id: string) => void;
 }
 
 const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
@@ -48,13 +48,13 @@ const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
             Još nema parova na listiću. Dodaj prvi par ispod.
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-2 max-[900px]:grid-cols-1">
+          <div className="flex flex-col gap-2">
             {pairs.map((p, idx) => (
               <TicketPairCard
                 key={p.id}
                 pair={p}
                 index={idx}
-                onDelete={() => onRemovePair(p.id)} // 👈 ovdje šaljemo callback
+                onDelete={() => onRemovePair(p.id)}
               />
             ))}
           </div>
