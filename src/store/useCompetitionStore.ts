@@ -74,14 +74,25 @@ export const useCompetitionsStore = create<CompetitionState>((set, get) => ({
 
   async fetchLeagues(sportId: string, countryCode: string) {
     const key = `${sportId}_${countryCode}`;
-    const { leaguesByKey } = get();
+    const { leaguesByKey, countries } = get();
     if (leaguesByKey[key]) return; // keširano
 
     set({ loadingLeagues: true, errorLeagues: null });
     try {
       const base = BACKEND_URL.replace(/\/+$/, "");
+
+      // 🔁 FOOTBALL → šaljemo code
+      // 🏀 BASKETBALL → šaljemo ime države
+      let countryParam = countryCode;
+      if (sportId.toLowerCase() === "basketball") {
+        const found = (countries || []).find((c) => c.code === countryCode);
+        if (found?.name) {
+          countryParam = found.name;
+        }
+      }
+
       const url = `${base}/api/natjecanja/leagues?countryCode=${encodeURIComponent(
-        countryCode
+        countryParam
       )}&sportId=${encodeURIComponent(sportId)}`;
 
       const res = await fetch(url);

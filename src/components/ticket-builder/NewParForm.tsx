@@ -11,8 +11,8 @@ export interface NewParFormState {
   countryCode: string;
   leagueId: string;
   matchId: string;
-  marketCode: string;
-  odds: string;
+  marketCode: string; // key iz map-e
+  odds: string; // koeficijent kao string
 }
 
 export interface CountryOption {
@@ -28,6 +28,11 @@ export interface LeagueOption {
   latestSeason?: string | null;
 }
 
+export interface MarketOption {
+  code: string; // tip (key iz map-e)
+  odds: number; // prosječni koeficijent
+}
+
 interface NewParFormProps {
   isAdding: boolean;
   newPar: NewParFormState;
@@ -36,8 +41,6 @@ interface NewParFormProps {
   leagues: LeagueOption[];
   currentMatches: MatchItem[];
 
-  mockMarkets: { code: string; label: string; defaultOdds: number }[];
-
   countriesLoading: boolean;
   countriesError: string | null;
   leaguesLoading: boolean;
@@ -45,15 +48,23 @@ interface NewParFormProps {
   matchesLoading: boolean;
   matchesError: string | null;
 
+  markets: MarketOption[];
+  marketsLoading: boolean;
+  marketsError: string | null;
+
   onChange: (field: keyof NewParFormState, value: string) => void;
   onCancel: () => void;
   onSubmit: (e: React.FormEvent) => void;
   canSubmit: boolean;
 
-  /** 0 = danas, 1 = sutra, 2 = za 2 dana */
+  /** 0 = danas, 1 = sutra, 2 = prekosutra */
   selectedDayOffset: 0 | 1 | 2;
   onChangeDayOffset: (offset: 0 | 1 | 2) => void;
 }
+
+// privremeni formatter dok ne dovedemo prave prijevode
+const formatMarketLabel = (code: string): string =>
+  code.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
 const NewParForm: React.FC<NewParFormProps> = ({
   isAdding,
@@ -61,13 +72,15 @@ const NewParForm: React.FC<NewParFormProps> = ({
   countries,
   leagues,
   currentMatches,
-  mockMarkets,
   countriesLoading,
   countriesError,
   leaguesLoading,
   leaguesError,
   matchesLoading,
   matchesError,
+  markets,
+  marketsLoading,
+  marketsError,
   onChange,
   onCancel,
   onSubmit,
@@ -75,7 +88,7 @@ const NewParForm: React.FC<NewParFormProps> = ({
   selectedDayOffset,
   onChangeDayOffset,
 }) => {
-  // map countries → JackOption
+  // Countries → JackOption
   const countryOptions: JackOption[] = countries.map((c) => ({
     value: c.code,
     label: c.name,
@@ -85,11 +98,14 @@ const NewParForm: React.FC<NewParFormProps> = ({
         : undefined,
   }));
 
-  // map leagues → JackOption
+  // Leagues → JackOption
   const leagueOptions: JackOption[] = leagues.map((l) => ({
     value: l.id,
     label: l.name,
-    iconUrl: l.logo ?? undefined,
+    iconUrl:
+      l.logo && (l.logo.startsWith("http://") || l.logo.startsWith("https://"))
+        ? l.logo
+        : undefined,
     rightTag: l.latestSeason ?? undefined,
   }));
 
@@ -106,13 +122,20 @@ const NewParForm: React.FC<NewParFormProps> = ({
     }
   };
 
-  // matches → JackOption with TWO logos (home + away)
+  // Matches → JackOption with two logos (home + away)
   const matchOptions: JackOption[] = currentMatches.map((m) => ({
     value: m.id,
     label: m.label, // "Home – Away"
     iconUrls: [m.homeLogo ?? null, m.awayLogo ?? null],
     description: m.leagueName,
     rightTag: formatTime(m.timestamp),
+  }));
+
+  // Markets → JackOption
+  const marketOptions: JackOption[] = markets.map((m) => ({
+    value: m.code,
+    label: formatMarketLabel(m.code),
+    rightTag: m.odds.toFixed(2),
   }));
 
   const dayLabels: Record<0 | 1 | 2, string> = {
@@ -200,7 +223,7 @@ const NewParForm: React.FC<NewParFormProps> = ({
             searchPlaceholder="Traži ligu..."
           />
 
-          {/* Day filter: danas / sutra / za 2 dana */}
+          {/* Day filter */}
           <div className="w-full flex flex-col gap-1">
             <span className="text-[11px] text-slate-400">Dan odigravanja</span>
             <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-jack-border bg-black/70 text-[11px]">
@@ -225,6 +248,7 @@ const NewParForm: React.FC<NewParFormProps> = ({
             </div>
           </div>
 
+          {/* Match */}
           <JackDropdown
             label="Utakmica"
             placeholder={
@@ -255,30 +279,42 @@ const NewParForm: React.FC<NewParFormProps> = ({
           />
 
           {/* Market */}
-          <div className="flex flex-col gap-1">
-            <label className="text-[11px] text-slate-400">Tip oklade</label>
-            <select
-              value={newPar.marketCode}
-              onChange={(e) => onChange("marketCode", e.target.value)}
-              className="rounded-xl border border-jack-border bg-black/80 px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-400"
-            >
-              <option value="">Odaberi tip</option>
-              {mockMarkets.map((m) => (
-                <option key={m.code} value={m.code}>
-                  {m.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <JackDropdown
+            label="Tip oklade"
+            placeholder={
+              !newPar.matchId
+                ? "Prvo odaberi utakmicu"
+                : marketsLoading
+                ? "Učitavam tipove oklade..."
+                : marketsError
+                ? "Greška pri dohvaćanju tipova"
+                : markets.length === 0
+                ? "Nema dostupnih tipova"
+                : "Odaberi tip oklade"
+            }
+            value={newPar.marketCode}
+            onChange={(val) => onChange("marketCode", val)}
+            options={marketOptions}
+            disabled={
+              !newPar.matchId ||
+              marketsLoading ||
+              !!marketsError ||
+              markets.length === 0
+            }
+            loading={marketsLoading}
+            error={marketsError || undefined}
+            searchable
+            searchPlaceholder="Traži tip oklade..."
+          />
 
-          {/* Odds */}
+          {/* Koeficijent (read-only) */}
           <div className="flex flex-col gap-1">
             <label className="text-[11px] text-slate-400">Koeficijent</label>
             <input
               type="text"
               value={newPar.odds}
-              onChange={(e) => onChange("odds", e.target.value)}
-              placeholder="npr. 1.85"
+              readOnly
+              placeholder="Odaberi tip oklade"
               className="rounded-xl border border-jack-border bg-black/80 px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-400"
             />
           </div>

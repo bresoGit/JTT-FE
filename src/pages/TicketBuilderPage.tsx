@@ -3,18 +3,17 @@ import React from "react";
 import type { SportType, TicketPair } from "../types/ticket";
 import { useTicket } from "../context/TicketContext";
 import TicketSummaryPanel from "../components/ticket-builder/TicketSummaryPanel";
-import type { NewParFormState } from "../components/ticket-builder/NewParForm";
-import NewParForm from "../components/ticket-builder/NewParForm";
+import NewParForm, {
+  type NewParFormState,
+  type MarketOption,
+} from "../components/ticket-builder/NewParForm";
 import { useCompetitionsStore } from "../store/useCompetitionStore";
 import { useMatchesStore } from "../store/useMatchesStore";
 
-const mockMarkets: { code: string; label: string; defaultOdds: number }[] = [
-  { code: "HOME_WIN", label: "Pobjeda domaćina", defaultOdds: 1.8 },
-  { code: "AWAY_WIN", label: "Pobjeda gosta", defaultOdds: 2.1 },
-  { code: "BTTS", label: "Obje ekipe daju gol", defaultOdds: 1.95 },
-  { code: "OVER_2_5", label: "Više od 2.5 gola", defaultOdds: 1.85 },
-  { code: "UNDER_2_5", label: "Manje od 2.5 gola", defaultOdds: 1.9 },
-];
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta as any).env?.BACKEND_URL ||
+  "http://localhost:8080";
 
 const defaultNewPar: NewParFormState = {
   sport: "FOOTBALL",
@@ -30,6 +29,10 @@ const formatDate = (d: Date) =>
     .getDate()
     .toString()
     .padStart(2, "0")}`;
+
+// privremeni čitljiv label za marketCode, dok ne uvedemo prijevode/enum
+const formatMarketLabel = (code: string): string =>
+  code.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
 const TicketBuilderPage: React.FC = () => {
   const { pairs, addPair, clearTicket, removePair } = useTicket();
@@ -53,6 +56,10 @@ const TicketBuilderPage: React.FC = () => {
 
   const { matchesByKey, loadingMatches, errorMatches, fetchMatches } =
     useMatchesStore();
+
+  const [markets, setMarkets] = React.useState<MarketOption[]>([]);
+  const [marketsLoading, setMarketsLoading] = React.useState(false);
+  const [marketsError, setMarketsError] = React.useState<string | null>(null);
 
   const sportId = newPar.sport === "FOOTBALL" ? "football" : "basketball";
 
@@ -121,6 +128,54 @@ const TicketBuilderPage: React.FC = () => {
     dateTo,
   ]);
 
+  // when match changes → fetch bet types (markets) for that match
+  React.useEffect(() => {
+    const loadMarkets = async () => {
+      if (!newPar.matchId) {
+        setMarkets([]);
+        setMarketsError(null);
+        setMarketsLoading(false);
+        return;
+      }
+
+      setMarketsLoading(true);
+      setMarketsError(null);
+
+      try {
+        const base = BACKEND_URL.replace(/\/+$/, "");
+        const url =
+          `${base}/api/natjecanja/bet-types` +
+          `?matchId=${encodeURIComponent(newPar.matchId)}` +
+          `&sport=${encodeURIComponent(newPar.sport)}`; // "FOOTBALL"/"BASKETBALL"
+
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`Greška pri dohvaćanju tipova oklade: ${res.status}`);
+        }
+
+        const data: Record<string, number> = await res.json();
+
+        const mapped: MarketOption[] = Object.entries(data).map(
+          ([code, odd]) => ({
+            code,
+            odds: odd,
+          })
+        );
+
+        setMarkets(mapped);
+      } catch (err: any) {
+        setMarkets([]);
+        setMarketsError(
+          err?.message ?? "Došlo je do greške pri dohvaćanju tipova oklade."
+        );
+      } finally {
+        setMarketsLoading(false);
+      }
+    };
+
+    loadMarkets();
+  }, [newPar.matchId, newPar.sport]);
+
   const handleOpenForm = () => {
     setNewPar(defaultNewPar);
     setSelectedDayOffset(0); // reset na "Danas"
@@ -130,6 +185,9 @@ const TicketBuilderPage: React.FC = () => {
   const handleCancelForm = () => {
     setIsAdding(false);
     setNewPar(defaultNewPar);
+    setMarkets([]);
+    setMarketsError(null);
+    setMarketsLoading(false);
   };
 
   const handleChange = (field: keyof NewParFormState, value: string) => {
@@ -141,8 +199,8 @@ const TicketBuilderPage: React.FC = () => {
           countryCode: "",
           leagueId: "",
           matchId: "",
-          marketCode: prev.marketCode,
-          odds: prev.odds,
+          marketCode: "",
+          odds: "",
         };
       }
       if (field === "countryCode") {
@@ -151,6 +209,8 @@ const TicketBuilderPage: React.FC = () => {
           countryCode: value,
           leagueId: "",
           matchId: "",
+          marketCode: "",
+          odds: "",
         };
       }
       if (field === "leagueId") {
@@ -158,6 +218,17 @@ const TicketBuilderPage: React.FC = () => {
           ...prev,
           leagueId: value,
           matchId: "",
+          marketCode: "",
+          odds: "",
+        };
+      }
+      if (field === "matchId") {
+        // kad mijenjamo utakmicu → resetiraj tip i koeficijent
+        return {
+          ...prev,
+          matchId: value,
+          marketCode: "",
+          odds: "",
         };
       }
 
@@ -165,10 +236,12 @@ const TicketBuilderPage: React.FC = () => {
 
       // pick market → auto fill odds
       if (field === "marketCode") {
-        const m = mockMarkets.find((x) => x.code === value);
+        const m = markets.find((x) => x.code === value);
         if (m) {
           base.marketCode = value;
-          base.odds = m.defaultOdds.toString();
+          base.odds = m.odds.toString();
+        } else {
+          base.odds = "";
         }
       }
 
@@ -184,26 +257,29 @@ const TicketBuilderPage: React.FC = () => {
     }
 
     const match = currentMatches.find((m) => m.id === newPar.matchId);
-    const market = mockMarkets.find((m) => m.code === newPar.marketCode);
-
-    if (!match || !market) return;
+    if (!match) return;
 
     const oddsNumber = Number(newPar.odds.replace(",", "."));
     if (Number.isNaN(oddsNumber)) return;
+
+    const marketLabel = formatMarketLabel(newPar.marketCode);
 
     const newItem: TicketPair = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       sport: newPar.sport,
       matchId: match.id,
       matchLabel: match.label,
-      marketCode: market.code,
-      marketLabel: market.label,
+      marketCode: newPar.marketCode,
+      marketLabel,
       odds: oddsNumber,
     };
 
     addPair(newItem);
     setIsAdding(false);
     setNewPar(defaultNewPar);
+    setMarkets([]);
+    setMarketsError(null);
+    setMarketsLoading(false);
   };
 
   const canSubmit =
@@ -245,13 +321,15 @@ const TicketBuilderPage: React.FC = () => {
           countries={countries || []}
           leagues={leagues}
           currentMatches={currentMatches}
-          mockMarkets={mockMarkets}
           countriesLoading={loadingCountries}
           countriesError={errorCountries}
           leaguesLoading={loadingLeagues}
           leaguesError={errorLeagues}
           matchesLoading={loadingMatches}
           matchesError={errorMatches}
+          markets={markets}
+          marketsLoading={marketsLoading}
+          marketsError={marketsError}
           onChange={handleChange}
           onCancel={handleCancelForm}
           onSubmit={handleSubmit}
@@ -259,8 +337,15 @@ const TicketBuilderPage: React.FC = () => {
           selectedDayOffset={selectedDayOffset}
           onChangeDayOffset={(off) => {
             setSelectedDayOffset(off);
-            // reset match when day changes
-            setNewPar((prev) => ({ ...prev, matchId: "" }));
+            // reset match + market when day changes
+            setNewPar((prev) => ({
+              ...prev,
+              matchId: "",
+              marketCode: "",
+              odds: "",
+            }));
+            setMarkets([]);
+            setMarketsError(null);
           }}
         />
       </div>

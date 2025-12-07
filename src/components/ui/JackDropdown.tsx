@@ -312,9 +312,9 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
                 Nema rezultata.
               </div>
             ) : (
-              filteredOptions.map((opt) => (
+              filteredOptions.map((opt, i) => (
                 <button
-                  key={opt.value}
+                  key={i}
                   type="button"
                   onClick={() => handleSelect(opt.value)}
                   className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-red-900/30 ${
