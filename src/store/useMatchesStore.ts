@@ -10,11 +10,20 @@ export interface MatchItem {
   id: string;
   label: string; // "Domacin – Gost"
   timestamp: number;
+
   leagueId: string;
   leagueName: string;
   leagueLogo?: string | null;
+
   homeLogo?: string | null;
   awayLogo?: string | null;
+
+  // NEW – align with NatjecanjeDropdownItem
+  homeId?: string;
+  awayId?: string;
+  homeName?: string;
+  awayName?: string;
+  seasonId?: string;
 }
 
 interface MatchesState {
@@ -64,7 +73,9 @@ export const useMatchesStore = create<MatchesState>((set, get) => ({
 
       const data: {
         matchId: number;
+        domacinId: string;
         domacinIme: string;
+        gostId: string;
         gostIme: string;
         domacinLogo?: string | null;
         gostLogo?: string | null;
@@ -72,17 +83,26 @@ export const useMatchesStore = create<MatchesState>((set, get) => ({
         leagueId: string;
         leagueIme: string;
         leagueLogo?: string | null;
+        seasonId?: string | null;
       }[] = await res.json();
 
       const mapped: MatchItem[] = data.map((m) => ({
         id: String(m.matchId),
         label: `${m.domacinIme} – ${m.gostIme}`,
         timestamp: m.timestamp,
+
         leagueId: String(m.leagueId),
         leagueName: m.leagueIme,
-        leagueLogo: m.leagueLogo,
+        leagueLogo: m.leagueLogo ?? null,
+
         homeLogo: m.domacinLogo ?? null,
         awayLogo: m.gostLogo ?? null,
+
+        homeId: m.domacinId,
+        awayId: m.gostId,
+        homeName: m.domacinIme,
+        awayName: m.gostIme,
+        seasonId: m.seasonId ?? undefined,
       }));
 
       set((state) => ({

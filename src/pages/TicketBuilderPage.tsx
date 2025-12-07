@@ -265,6 +265,12 @@ const TicketBuilderPage: React.FC = () => {
 
     const marketLabel = formatMarketLabel(newPar.marketCode);
 
+    // pokušaj izvući imena iz labela "Domacin – Gost"
+    const [labelHome, labelAway] = match.label.split(" – ");
+
+    const homeName = (match as any).homeName ?? labelHome ?? "Domaćin";
+    const awayName = (match as any).awayName ?? labelAway ?? "Gost";
+
     const newItem: TicketPair = {
       id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       sport: newPar.sport,
@@ -281,10 +287,18 @@ const TicketBuilderPage: React.FC = () => {
 
       leagueId: newPar.leagueId,
       leagueName: match.leagueName ?? selectedLeague?.name ?? undefined,
-      leagueLogo: selectedLeague?.logo ?? null,
+      leagueLogo: (match as any).leagueLogo ?? selectedLeague?.logo ?? null,
 
       homeLogo: match.homeLogo ?? null,
       awayLogo: match.awayLogo ?? null,
+
+      // NEW fields aligned with TicketPairDto
+      homeName,
+      awayName,
+      homeId: (match as any).homeId ?? undefined,
+      awayId: (match as any).awayId ?? undefined,
+      season:
+        (match as any).seasonId ?? selectedLeague?.latestSeason ?? undefined,
     };
 
     addPair(newItem);
@@ -328,6 +342,13 @@ const TicketBuilderPage: React.FC = () => {
             leagueLogo: p.leagueLogo ?? null,
             homeLogo: p.homeLogo ?? null,
             awayLogo: p.awayLogo ?? null,
+
+            // NEW fields for TicketPairDto
+            homeName: p.homeName ?? null,
+            awayName: p.awayName ?? null,
+            homeId: p.homeId ?? null,
+            awayId: p.awayId ?? null,
+            season: p.season ?? null,
           })),
         }),
       });
@@ -338,7 +359,7 @@ const TicketBuilderPage: React.FC = () => {
 
       // nakon uspješnog slanja očisti listić
       clearTicket();
-      // ovdje možeš kasnije ubaciti toast
+      // TODO: toast "uspješno poslan"
     } catch (err) {
       console.error(err);
       // TODO: toast error poruka

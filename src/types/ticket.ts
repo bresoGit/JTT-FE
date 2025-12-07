@@ -20,4 +20,11 @@ export interface TicketPair {
 
   homeLogo?: string | null;
   awayLogo?: string | null;
+
+  // NEW - to match TicketPairDto
+  homeName?: string;
+  awayName?: string;
+  homeId?: string;
+  awayId?: string;
+  season?: string;
 }

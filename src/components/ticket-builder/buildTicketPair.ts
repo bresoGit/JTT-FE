@@ -2,9 +2,9 @@
 import type { TicketPair, SportType } from "../../types/ticket";
 import type {
   NewParFormState,
-  CountryOption,
+  CountryOption, // kept for signature compatibility, not used
   LeagueOption,
-} from "../ticket-builder/NewParForm"; // prilagodi path ako treba
+} from "../ticket-builder/NewParForm";
 import type { MatchItem } from "../../store/useMatchesStore";
 
 // isti formatter kao u NewParForm
@@ -13,7 +13,7 @@ const formatMarketLabel = (code: string): string =>
 
 interface BuildTicketPairArgs {
   form: NewParFormState;
-  countries: CountryOption[]; // i dalje ih primaš, ali ih TicketPair više ne koristi
+  countries: CountryOption[]; // unused for now, ali ostaje u potpisu
   leagues: LeagueOption[];
   matches: MatchItem[];
   markets: { code: string; odds: number }[];
@@ -48,6 +48,12 @@ export function buildTicketPair({
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+  // pokušaj parsiranja imena iz labela "Home – Away" (EN dash)
+  const [labelHome, labelAway] = match.label.split(" – ");
+
+  const homeName = match.homeName || labelHome || "Domaćin";
+  const awayName = match.awayName || labelAway || "Gost";
+
   return {
     id: generatedId,
 
@@ -60,16 +66,21 @@ export function buildTicketPair({
     marketLabel: formatMarketLabel(market.code),
     odds: finalOdds,
 
-    // enriched info (samo ono što TicketPair sada ima)
+    // enriched info
     timestamp: match.timestamp,
 
-    leagueId: league?.id,
+    leagueId: match.leagueId ?? league?.id,
     leagueName: match.leagueName ?? league?.name,
-    leagueLogo:
-      // ako MatchItem ima svoj logo, koristi njega, inače iz LeagueOption
-      (match as any).leagueLogo ?? league?.logo ?? null,
+    leagueLogo: match.leagueLogo ?? league?.logo ?? null,
 
     homeLogo: match.homeLogo ?? null,
     awayLogo: match.awayLogo ?? null,
+
+    // NEW fields for backend TicketPairDto
+    homeName,
+    awayName,
+    homeId: match.homeId,
+    awayId: match.awayId,
+    season: match.seasonId ?? league?.latestSeason ?? undefined,
   };
 }
