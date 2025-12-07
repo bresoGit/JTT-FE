@@ -1,19 +1,16 @@
 // src/components/ticket-builder/utils/buildTicketPair.ts
-import type { TicketPair, SportType } from "../../types/ticket";
-import type {
-  NewParFormState,
-  CountryOption, // kept for signature compatibility, not used
-  LeagueOption,
-} from "../ticket-builder/NewParForm";
-import type { MatchItem } from "../../store/useMatchesStore";
 
-// isti formatter kao u NewParForm
-const formatMarketLabel = (code: string): string =>
-  code.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+import type { MatchItem } from "../../store/useMatchesStore";
+import type { SportType, TicketPair } from "../../types/ticket";
+import type {
+  CountryOption,
+  LeagueOption,
+  NewParFormState,
+} from "./NewParForm";
 
 interface BuildTicketPairArgs {
   form: NewParFormState;
-  countries: CountryOption[]; // unused for now, ali ostaje u potpisu
+  countries: CountryOption[];
   leagues: LeagueOption[];
   matches: MatchItem[];
   markets: { code: string; odds: number }[];
@@ -33,7 +30,6 @@ export function buildTicketPair({
     return null;
   }
 
-  // koef: prvo probamo form.odds (string), fallback na market.odds
   const oddsSource =
     form.odds && form.odds.trim().length > 0
       ? form.odds.trim().replace(",", ".")
@@ -42,45 +38,39 @@ export function buildTicketPair({
   const parsed = Number(oddsSource);
   const finalOdds = Number.isFinite(parsed) ? parsed : market.odds;
 
-  // siguran ID u browseru
   const generatedId =
     typeof crypto !== "undefined" && "randomUUID" in crypto
       ? crypto.randomUUID()
       : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
-  // pokušaj parsiranja imena iz labela "Home – Away" (EN dash)
   const [labelHome, labelAway] = match.label.split(" – ");
-
-  const homeName = match.homeName || labelHome || "Domaćin";
-  const awayName = match.awayName || labelAway || "Gost";
 
   return {
     id: generatedId,
-
     sport: form.sport as SportType,
 
-    // core match + market
     matchId: match.id,
     matchLabel: match.label,
+
+    // 🔴 Bez formatiranja – koristimo vrijednost kakva jest
     marketCode: market.code,
-    marketLabel: formatMarketLabel(market.code),
+    marketLabel: market.code,
     odds: finalOdds,
 
-    // enriched info
     timestamp: match.timestamp,
 
-    leagueId: match.leagueId ?? league?.id,
+    leagueId: league?.id,
     leagueName: match.leagueName ?? league?.name,
-    leagueLogo: match.leagueLogo ?? league?.logo ?? null,
+    leagueLogo: (match as any).leagueLogo ?? league?.logo ?? null,
 
     homeLogo: match.homeLogo ?? null,
     awayLogo: match.awayLogo ?? null,
 
-    // NEW fields for backend TicketPairDto
-    homeName,
-    awayName,
-    homeId: match.homeId,
-    awayId: match.awayId,
-    season: match.seasonId ?? league?.latestSeason ?? undefined,
+    homeName: (match as any).homeName ?? labelHome ?? "Domaćin",
+    awayName: (match as any).awayName ?? labelAway ?? "Gost",
+    homeId: (match as any).homeId ?? undefined,
+    awayId: (match as any).awayId ?? undefined,
+    season:
+      (match as any).seasonId ?? (league as any)?.latestSeason ?? undefined,
   };
 }

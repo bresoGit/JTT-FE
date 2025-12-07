@@ -6,7 +6,7 @@ interface TicketPairCardProps {
   pair: TicketPair;
   index: number;
   onDelete?: () => void;
-  disabledActions?: boolean; // NEW
+  disabledActions?: boolean;
 }
 
 const TicketPairCard: React.FC<TicketPairCardProps> = ({
@@ -20,6 +20,7 @@ const TicketPairCard: React.FC<TicketPairCardProps> = ({
 
   const { leagueName, leagueLogo, homeLogo, awayLogo, timestamp } = pair;
 
+  // Normalizacija labela utakmice samo za split home/away – ne diramo tržišni label
   const normalizedLabel = pair.matchLabel
     .replace(/ – /g, " - ")
     .replace(/–/g, "-");
@@ -37,6 +38,15 @@ const TicketPairCard: React.FC<TicketPairCardProps> = ({
   };
 
   const timeLabel = formatTime(timestamp);
+
+  // 👇 Ovo je bitno: nikakvo formatiranje, samo pametan fallback
+  const displayMarketLabel =
+    (pair as any).newMarketLabel &&
+    (pair as any).newMarketLabel.trim().length > 0
+      ? (pair as any).newMarketLabel
+      : pair.marketLabel && pair.marketLabel.trim().length > 0
+      ? pair.marketLabel
+      : pair.marketCode; // zadnja linija obrane – raw string iz backenda
 
   return (
     <div
@@ -189,7 +199,7 @@ const TicketPairCard: React.FC<TicketPairCardProps> = ({
       <div className="mt-2 flex items-center justify-between gap-3 max-[500px]:mt-1">
         <div className="flex-1 min-w-0">
           <p className="truncate text-[11px] text-slate-400 max-[500px]:text-[10px]">
-            {pair.marketLabel}
+            {displayMarketLabel}
           </p>
         </div>
         <div

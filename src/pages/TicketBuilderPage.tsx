@@ -32,9 +32,6 @@ const formatDate = (d: Date) =>
     .toString()
     .padStart(2, "0")}`;
 
-const formatMarketLabel = (code: string): string =>
-  code.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
-
 interface TicketScanApiResponse {
   status?: string;
   originalTotalOdds?: number;
@@ -132,7 +129,6 @@ const TicketBuilderPage: React.FC = () => {
   // clear scan if pairs change (listić promijenjen nakon analize)
   React.useEffect(() => {
     if (!scannedPairs || scannedPairs.length === 0) return;
-    // ako je analizirani broj parova različit od trenutnog → reset
     if (pairs.length !== scannedPairs.length) {
       setScannedPairs(null);
       setScannedOriginalTotalOdds(null);
@@ -212,7 +208,7 @@ const TicketBuilderPage: React.FC = () => {
 
         const mapped: MarketOption[] = Object.entries(data).map(
           ([code, odd]) => ({
-            code,
+            code, // već je labela
             odds: odd,
           })
         );
@@ -301,6 +297,17 @@ const TicketBuilderPage: React.FC = () => {
     });
   };
 
+  const handleClearScan = () => {
+    setScannedPairs(null);
+    setScannedOriginalTotalOdds(null);
+    setScannedAdjustedTotalOdds(null);
+    try {
+      window.localStorage.removeItem(SCAN_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -314,14 +321,18 @@ const TicketBuilderPage: React.FC = () => {
     const oddsNumber = Number(newPar.odds.replace(",", "."));
     if (Number.isNaN(oddsNumber)) return;
 
-    const marketLabel = formatMarketLabel(newPar.marketCode);
+    // ⬇️ KLJUČNA PROMJENA: ne formatiramo više, koristimo labelu kako je:
+    const marketLabel = newPar.marketCode;
 
     const [labelHome, labelAway] = match.label.split(" – ");
     const homeName = (match as any).homeName ?? labelHome ?? "Domaćin";
     const awayName = (match as any).awayName ?? labelAway ?? "Gost";
 
     const newItem: TicketPair = {
-      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      id:
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(16).slice(2)}`,
       sport: newPar.sport,
 
       matchId: match.id,
@@ -355,15 +366,8 @@ const TicketBuilderPage: React.FC = () => {
     setMarketsError(null);
     setMarketsLoading(false);
 
-    // novi par znači da je stara analiza nevažeća
-    setScannedPairs(null);
-    setScannedOriginalTotalOdds(null);
-    setScannedAdjustedTotalOdds(null);
-    try {
-      window.localStorage.removeItem(SCAN_STORAGE_KEY);
-    } catch {
-      // ignore
-    }
+    // novi par → stara analiza više ne vrijedi
+    handleClearScan();
   };
 
   const canSubmit =
@@ -373,17 +377,6 @@ const TicketBuilderPage: React.FC = () => {
     !!newPar.matchId &&
     !!newPar.marketCode &&
     !!newPar.odds;
-
-  const handleClearScan = () => {
-    setScannedPairs(null);
-    setScannedOriginalTotalOdds(null);
-    setScannedAdjustedTotalOdds(null);
-    try {
-      window.localStorage.removeItem(SCAN_STORAGE_KEY);
-    } catch {
-      // ignore
-    }
-  };
 
   const handleSubmitTicket = async () => {
     if (pairs.length === 0 || isSubmittingTicket) return;
@@ -437,7 +430,6 @@ const TicketBuilderPage: React.FC = () => {
       setScannedOriginalTotalOdds(originalTotal);
       setScannedAdjustedTotalOdds(adjustedTotal);
 
-      // cacheaj analizu
       try {
         window.localStorage.setItem(
           SCAN_STORAGE_KEY,
@@ -450,12 +442,8 @@ const TicketBuilderPage: React.FC = () => {
       } catch {
         // ignore
       }
-
-      // VAŽNO: ne čistimo listić, treba nam za usporedbu
-      // clearTicket();  // maknuto
     } catch (err) {
       console.error(err);
-      // TODO: toast error poruka
     } finally {
       setIsSubmittingTicket(false);
     }
@@ -498,6 +486,7 @@ const TicketBuilderPage: React.FC = () => {
         {/* RIGHT: new par form */}
         <NewParForm
           isAdding={isAdding}
+          disabled={isSubmittingTicket || !!scannedPairs}
           newPar={newPar}
           countries={countries || []}
           leagues={leagues}
@@ -527,7 +516,6 @@ const TicketBuilderPage: React.FC = () => {
             setMarkets([]);
             setMarketsError(null);
           }}
-          disabled={false}
         />
       </div>
     </div>

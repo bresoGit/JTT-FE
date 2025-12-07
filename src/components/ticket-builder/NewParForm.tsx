@@ -29,13 +29,13 @@ export interface LeagueOption {
 }
 
 export interface MarketOption {
-  code: string;
+  code: string; // OVDJE: sada očekujemo da je code već lijepa labela s backend-a
   odds: number;
 }
 
 interface NewParFormProps {
   isAdding: boolean;
-  disabled: boolean; // NEW – global lock while ticket scanning
+  disabled: boolean; // global lock while ticket scanning
   newPar: NewParFormState;
 
   countries: CountryOption[];
@@ -61,9 +61,6 @@ interface NewParFormProps {
   selectedDayOffset: 0 | 1 | 2;
   onChangeDayOffset: (offset: 0 | 1 | 2) => void;
 }
-
-const formatMarketLabel = (code: string): string =>
-  code.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
 
 const NewParForm: React.FC<NewParFormProps> = ({
   isAdding,
@@ -127,9 +124,10 @@ const NewParForm: React.FC<NewParFormProps> = ({
     rightTag: formatTime(m.timestamp),
   }));
 
+  // 🔴 BITNO: label = m.code BEZ ikakvog formatiranja
   const marketOptions: JackOption[] = markets.map((m) => ({
     value: m.code,
-    label: formatMarketLabel(m.code),
+    label: m.code,
     rightTag: m.odds.toFixed(2),
   }));
 
