@@ -7,8 +7,6 @@ import TicketScanResultPanel from "./TicketScanResultPanel";
 interface TicketSummaryPanelProps {
   pairs: TicketPair[];
   totalOdds: number;
-  isAdding: boolean;
-  onOpenForm: () => void;
   onClearTicket: () => void;
   onRemovePair: (id: string) => void;
 
@@ -25,8 +23,7 @@ interface TicketSummaryPanelProps {
 const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
   pairs,
   totalOdds,
-  isAdding,
-  onOpenForm,
+
   onClearTicket,
   onRemovePair,
   onSubmitTicket,
@@ -174,28 +171,6 @@ const TicketSummaryPanel: React.FC<TicketSummaryPanelProps> = ({
             </button>
           )}
         </div>
-
-        <button
-          type="button"
-          disabled={isAdding || isSubmittingTicket}
-          onClick={onOpenForm}
-          className={`
-            ml-auto rounded-2xl px-4 py-2
-            text-[11px] md:text-[12px] max-[900px]:text-[10px]
-            font-semibold uppercase tracking-wide transition
-            ${
-              isAdding || isSubmittingTicket
-                ? "cursor-not-allowed border border-slate-600 bg-black/60 text-slate-500"
-                : "border border-jack-border bg-gradient-to-r from-black via-red-900/40 to-black text-red-100 shadow-[0_0_20px_rgba(248,113,113,0.7)] hover:brightness-110"
-            }
-          `}
-        >
-          {isAdding
-            ? "Obrazac za novi par je otvoren"
-            : isSubmittingTicket
-            ? "Pričekaj skeniranje..."
-            : "Dodaj novi par"}
-        </button>
       </div>
     </section>
   );

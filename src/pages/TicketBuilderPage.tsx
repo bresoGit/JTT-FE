@@ -227,12 +227,6 @@ const TicketBuilderPage: React.FC = () => {
     loadMarkets();
   }, [newPar.matchId, newPar.sport]);
 
-  const handleOpenForm = () => {
-    setNewPar(defaultNewPar);
-    setSelectedDayOffset(0);
-    setIsAdding(true);
-  };
-
   const handleCancelForm = () => {
     setIsAdding(false);
     setNewPar(defaultNewPar);
@@ -467,8 +461,6 @@ const TicketBuilderPage: React.FC = () => {
         <TicketSummaryPanel
           pairs={pairs}
           totalOdds={totalOdds}
-          isAdding={isAdding}
-          onOpenForm={handleOpenForm}
           onClearTicket={() => {
             clearTicket();
             handleClearScan();

@@ -178,7 +178,7 @@ interface DateRowProps {
 
 const DateRow: React.FC<DateRowProps> = ({ day, selected, onClick }) => {
   const base =
-    "flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2 transition";
+    "flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2 transition w-full";
   const active =
     "border-jack-red bg-jack-red/20 text-red-100 shadow-[0_0_16px_rgba(220,38,38,0.45)]";
   const inactive =

@@ -13,16 +13,85 @@ import NavHeader from "./components/layout/NavHeader";
 import HeroSection from "./components/layout/HeroSection";
 import UserPage from "./pages/UserPage";
 
+const RISK_STORAGE_KEY = "jack_selectedRisk";
+const DATES_STORAGE_KEY = "jack_selectedDates";
+
 const App: React.FC = () => {
+  // ✅ selectedRisk with localStorage hydration
   const [selectedRisk, setSelectedRisk] = React.useState<RiskLevel | "ALL">(
-    "ALL"
+    () => {
+      if (typeof window === "undefined") return "ALL";
+
+      try {
+        const stored = window.localStorage.getItem(RISK_STORAGE_KEY);
+        if (!stored) return "ALL";
+
+        const upper = stored.toUpperCase();
+        const allowed: Array<RiskLevel | "ALL"> = [
+          "ALL",
+          "LOW",
+          "MEDIUM",
+          "HIGH",
+        ];
+        return allowed.includes(upper as RiskLevel | "ALL")
+          ? (upper as RiskLevel | "ALL")
+          : "ALL";
+      } catch {
+        return "ALL";
+      }
+    }
   );
 
+  // ✅ selectedDates with localStorage hydration
   const [selectedDates, setSelectedDates] = React.useState<string[]>(() => {
+    if (typeof window === "undefined") {
+      const today = new Date();
+      const iso = today.toISOString().slice(0, 10);
+      return [iso];
+    }
+
+    try {
+      const stored = window.localStorage.getItem(DATES_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (
+          Array.isArray(parsed) &&
+          parsed.every((d) => typeof d === "string")
+        ) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+
     const today = new Date();
     const iso = today.toISOString().slice(0, 10);
     return [iso];
   });
+
+  // 💾 persist selectedRisk
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(RISK_STORAGE_KEY, selectedRisk);
+    } catch {
+      // ignore
+    }
+  }, [selectedRisk]);
+
+  // 💾 persist selectedDates
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        DATES_STORAGE_KEY,
+        JSON.stringify(selectedDates)
+      );
+    } catch {
+      // ignore
+    }
+  }, [selectedDates]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-jack-redMuted to-jack-border text-slate-100 overflow-hidden">
@@ -61,11 +130,10 @@ const App: React.FC = () => {
                 </div>
               }
             />
-            <Route path="/jack" element={<TicketBuilderPage />} />{" "}
-            {/* 👈 NEW */}
+            <Route path="/jack" element={<TicketBuilderPage />} />
             <Route path="/prijava" element={<LoginPage />} />
             <Route path="/registracija" element={<RegisterPage />} />
-            <Route path="/profil" element={<UserPage />} /> {/* 👈 user page */}
+            <Route path="/profil" element={<UserPage />} />
           </Routes>
         </main>
 
