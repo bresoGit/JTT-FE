@@ -21,7 +21,7 @@ const TicketScanResultPanel: React.FC<TicketScanResultPanelProps> = ({
     <section
       className="
         mt-4 rounded-2xl border border-jack-border/70
-        bg-black/20
+        bg-black/20 max-h-[30rem] overflow-y-auto
         px-3 py-3
         text-xs
         md:text-sm

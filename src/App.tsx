@@ -2,7 +2,6 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import TipsPanel from "./components/tips/TipsPanel";
-import GuillotinePanel from "./components/guillotine/GuillotinePanel";
 import type { RiskLevel } from "./types/tips";
 
 import Sidebar from "./components/layout/Sidebar";
@@ -50,7 +49,6 @@ const App: React.FC = () => {
                       onRiskChange={setSelectedRisk}
                       selectedDates={selectedDates}
                     />
-                    <GuillotinePanel />
                   </section>
 
                   {/* Desno: sidebar */}
