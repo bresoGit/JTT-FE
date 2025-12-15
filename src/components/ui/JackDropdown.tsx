@@ -259,79 +259,84 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
     <div className="flex flex-col gap-1 w-full" ref={containerRef}>
       <label className="text-[11px] text-slate-400">{label}</label>
 
-      <button
-        type="button"
-        disabled={isDisabled}
-        onClick={toggleOpen}
-        className={`flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs
+      {/* relative wrapper so dropdown can be absolute and aligned */}
+      <div className="relative w-full">
+        <button
+          type="button"
+          disabled={isDisabled}
+          onClick={toggleOpen}
+          className={`flex w-full items-center justify-between gap-2 rounded-xl border px-3 py-2 text-left text-xs
           ${isDisabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}
           ${
             error
               ? "border-red-500 bg-black/80 text-slate-100"
               : "border-jack-border bg-black/80 text-slate-100 hover:border-red-400"
           }`}
-      >
-        {renderTriggerContent()}
+        >
+          {renderTriggerContent()}
 
-        <div className="flex items-center gap-1 shrink-0">
-          {selected?.rightTag && (
-            <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-slate-300 border border-slate-700/60">
-              {selected.rightTag}
+          <div className="flex items-center gap-1 shrink-0">
+            {selected?.rightTag && (
+              <span className="rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-slate-300 border border-slate-700/60">
+                {selected.rightTag}
+              </span>
+            )}
+            <span className="text-[10px] text-slate-400">
+              {open ? "▲" : "▼"}
             </span>
-          )}
-          <span className="text-[10px] text-slate-400">{open ? "▲" : "▼"}</span>
-        </div>
-      </button>
+          </div>
+        </button>
+
+        {open && (
+          <div
+            className={`absolute left-0 top-full mt-1 z-40 max-h-72 w-full overflow-hidden rounded-xl border border-jack-border bg-black/95 text-xs shadow-[0_0_22px_rgba(0,0,0,0.9)]
+            ${variant === "match" ? "sm:text-[13px]" : ""}`}
+          >
+            {/* 🔎 search input */}
+            {searchable && (
+              <div className="border-b border-jack-border/60 bg-black/70 px-2 py-1.5">
+                <input
+                  autoFocus
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full rounded-lg bg-black/70 px-2 py-1 text-[11px] text-slate-100 outline-none placeholder:text-slate-500"
+                />
+              </div>
+            )}
+
+            <div className="max-h-60 overflow-y-auto">
+              {filteredOptions.length === 0 ? (
+                <div className="px-3 py-2 text-[11px] text-slate-500">
+                  Nema rezultata.
+                </div>
+              ) : (
+                filteredOptions.map((opt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleSelect(opt.value)}
+                    className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-red-900/30 ${
+                      opt.value === value ? "bg-red-900/40" : ""
+                    }`}
+                  >
+                    {renderOptionBody(opt)}
+                    {opt.rightTag && (
+                      <span className="shrink-0 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-slate-300 border border-slate-700/60">
+                        {opt.rightTag}
+                      </span>
+                    )}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
       {error && (
         <span className="mt-0.5 text-[11px] text-red-300">{error}</span>
-      )}
-
-      {open && (
-        <div
-          className={`mt-1 max-h-72 w-full overflow-hidden rounded-xl border border-jack-border bg-black/95 text-xs shadow-[0_0_22px_rgba(0,0,0,0.9)]
-            ${variant === "match" ? "sm:text-[13px]" : ""}`}
-        >
-          {/* 🔎 search input */}
-          {searchable && (
-            <div className="border-b border-jack-border/60 bg-black/70 px-2 py-1.5">
-              <input
-                autoFocus
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full rounded-lg bg-black/70 px-2 py-1 text-[11px] text-slate-100 outline-none placeholder:text-slate-500"
-              />
-            </div>
-          )}
-
-          <div className="max-h-60 overflow-y-auto">
-            {filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-[11px] text-slate-500">
-                Nema rezultata.
-              </div>
-            ) : (
-              filteredOptions.map((opt, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleSelect(opt.value)}
-                  className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-red-900/30 ${
-                    opt.value === value ? "bg-red-900/40" : ""
-                  }`}
-                >
-                  {renderOptionBody(opt)}
-                  {opt.rightTag && (
-                    <span className="shrink-0 rounded-full bg-black/60 px-2 py-0.5 text-[10px] text-slate-300 border border-slate-700/60">
-                      {opt.rightTag}
-                    </span>
-                  )}
-                </button>
-              ))
-            )}
-          </div>
-        </div>
       )}
     </div>
   );

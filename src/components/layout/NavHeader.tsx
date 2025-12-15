@@ -12,6 +12,7 @@ export default function NavHeader() {
   const isHome = location.pathname === "/";
   const isLogin = location.pathname === "/prijava";
   const isRegister = location.pathname === "/registracija";
+  const isPlanner = location.pathname === "/plan-liga";
 
   const initials =
     user && (user.firstName || user.lastName)
@@ -53,7 +54,6 @@ export default function NavHeader() {
         {/* Auth zone / user zone */}
         {!isAuthenticated || !user ? (
           <div className="flex items-center gap-2">
-            {/* Prijava */}
             <Link
               to="/prijava"
               className={`rounded-2xl border bg-gradient-to-r from-black via-red-900/40 to-black px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-red-100 ring-1 transition
@@ -66,7 +66,6 @@ export default function NavHeader() {
               Prijava
             </Link>
 
-            {/* Registracija */}
             <Link
               to="/registracija"
               className={`rounded-2xl bg-gradient-to-r from-jack-red to-red-600 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.95)] transition
@@ -89,8 +88,23 @@ export default function NavHeader() {
         )}
       </div>
 
-      {/* RIGHT: giljotina status */}
+      {/* RIGHT: giljotina status + planner link */}
       <div className="flex items-center justify-end gap-3">
+        {isAuthenticated && (
+          <button
+            type="button"
+            onClick={() => navigate("/plan-liga")}
+            className={`hidden sm:inline-flex items-center gap-1 rounded-2xl border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition
+              ${
+                isPlanner
+                  ? "border-red-400 bg-red-900/40 text-red-100 shadow-[0_0_20px_rgba(248,113,113,0.9)]"
+                  : "border-jack-border bg-black/70 text-slate-200 hover:border-red-400 hover:text-red-100"
+              }`}
+          >
+            Plan liga
+          </button>
+        )}
+
         <div className="flex items-center gap-2 rounded-2xl border border-jack-border bg-jack-card px-3 py-1.5 text-xs">
           <span className="h-2 w-2 rounded-full bg-emerald-400" />
           <span className="text-slate-300">Giljotina spremna</span>

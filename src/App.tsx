@@ -12,20 +12,20 @@ import TicketBuilderPage from "./pages/TicketBuilderPage";
 import NavHeader from "./components/layout/NavHeader";
 import HeroSection from "./components/layout/HeroSection";
 import UserPage from "./pages/UserPage";
+import LeaguePlannerPage from "./pages/LeaguePlannerPage"; // 👈 NEW
 
 const RISK_STORAGE_KEY = "jack_selectedRisk";
 const DATES_STORAGE_KEY = "jack_selectedDates";
 
 const App: React.FC = () => {
-  // ✅ selectedRisk with localStorage hydration
+  // ... (your existing state + effects remain exactly the same)
+
   const [selectedRisk, setSelectedRisk] = React.useState<RiskLevel | "ALL">(
     () => {
       if (typeof window === "undefined") return "ALL";
-
       try {
         const stored = window.localStorage.getItem(RISK_STORAGE_KEY);
         if (!stored) return "ALL";
-
         const upper = stored.toUpperCase();
         const allowed: Array<RiskLevel | "ALL"> = [
           "ALL",
@@ -42,7 +42,6 @@ const App: React.FC = () => {
     }
   );
 
-  // ✅ selectedDates with localStorage hydration
   const [selectedDates, setSelectedDates] = React.useState<string[]>(() => {
     if (typeof window === "undefined") {
       const today = new Date();
@@ -70,17 +69,13 @@ const App: React.FC = () => {
     return [iso];
   });
 
-  // 💾 persist selectedRisk
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     try {
       window.localStorage.setItem(RISK_STORAGE_KEY, selectedRisk);
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [selectedRisk]);
 
-  // 💾 persist selectedDates
   React.useEffect(() => {
     if (typeof window === "undefined") return;
     try {
@@ -88,14 +83,11 @@ const App: React.FC = () => {
         DATES_STORAGE_KEY,
         JSON.stringify(selectedDates)
       );
-    } catch {
-      // ignore
-    }
+    } catch {}
   }, [selectedDates]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-black via-jack-redMuted to-jack-border text-slate-100 overflow-hidden">
-      {/* Dekorativni glow u pozadini */}
       <div className="pointer-events-none fixed inset-0 opacity-60">
         <div className="absolute -top-32 right-0 h-72 w-72 rounded-full bg-red-500/20 blur-3xl" />
         <div className="absolute bottom-[-6rem] left-[-4rem] h-80 w-80 rounded-full bg-black/60 blur-3xl" />
@@ -110,7 +102,6 @@ const App: React.FC = () => {
               path="/"
               element={
                 <div className="flex flex-1 flex-col gap-4 md:flex-row">
-                  {/* Lijevo: tipovi + giljotina */}
                   <section className="flex-1 space-y-4">
                     <HeroSection />
                     <TipsPanel
@@ -120,7 +111,6 @@ const App: React.FC = () => {
                     />
                   </section>
 
-                  {/* Desno: sidebar */}
                   <aside className="mt-4 w-full md:mt-0 md:w-80">
                     <Sidebar
                       selectedDates={selectedDates}
@@ -131,6 +121,8 @@ const App: React.FC = () => {
               }
             />
             <Route path="/jack" element={<TicketBuilderPage />} />
+            <Route path="/plan-liga" element={<LeaguePlannerPage />} />{" "}
+            {/* 👈 NEW */}
             <Route path="/prijava" element={<LoginPage />} />
             <Route path="/registracija" element={<RegisterPage />} />
             <Route path="/profil" element={<UserPage />} />
