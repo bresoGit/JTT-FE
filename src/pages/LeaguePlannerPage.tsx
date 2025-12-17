@@ -24,7 +24,7 @@ const formatDateLabel = (iso: string, index: number) => {
   return `${day}.${month}. (${weekday})`;
 };
 
-// ✅ FIXED: build YYYY-MM-DD using *local* date, no toISOString()
+// build YYYY-MM-DD using *local* date, no toISOString()
 const makeDateRange = (): string[] => {
   const base = new Date();
   base.setHours(0, 0, 0, 0); // local midnight
@@ -107,6 +107,7 @@ const LeaguePlannerPage: React.FC = () => {
               countryCode: (l.countryCode || "").toUpperCase(),
               leagueName: l.leagueName ?? l.leagueId,
               leagueLogo: l.leagueLogo ?? undefined,
+              season: l.season ?? null, // 🔹 season iz backenda
             })) ?? [];
 
           return {
@@ -116,6 +117,7 @@ const LeaguePlannerPage: React.FC = () => {
             leagueId: "",
             leagueName: "",
             leagueLogo: "",
+            season: null, // za current selection nije bitno, ali držimo shape
           };
         });
 
@@ -151,12 +153,12 @@ const LeaguePlannerPage: React.FC = () => {
     );
   };
 
-  // ➕ ADD league → immediate backend call
+  // ➕ ADD league → immediate backend call (with season)
   const handleAddLeague = async (index: number) => {
     const day = dayPlans[index];
     if (!day || !day.countryCode || !day.leagueId) return;
 
-    // find league option in current dropdown to get name + logo
+    // find league option in current dropdown to get name + logo + season
     const key = `${sportId}_${day.countryCode}`;
     const leagues = leaguesByKey[key] || [];
     const selectedLeague = leagues.find((l) => l.id === day.leagueId);
@@ -168,6 +170,8 @@ const LeaguePlannerPage: React.FC = () => {
         selectedLeague.logo.startsWith("https://"))
         ? selectedLeague.logo
         : undefined;
+
+    const season = selectedLeague?.latestSeason ?? null; // 🔹 uzmi latestSeason
 
     setMutating(true);
     setError(null);
@@ -184,6 +188,7 @@ const LeaguePlannerPage: React.FC = () => {
           countryCode: day.countryCode,
           leagueName,
           leagueLogo,
+          season, // 🔹 pošalji season
         }),
       });
 
@@ -205,12 +210,13 @@ const LeaguePlannerPage: React.FC = () => {
         );
 
         if (existsIndex >= 0) {
-          // update existing row with fresh name/logo
+          // update existing row with fresh name/logo/season
           const updatedLeagues = [...d.leagues];
           updatedLeagues[existsIndex] = {
             ...updatedLeagues[existsIndex],
             leagueName,
             leagueLogo,
+            season,
           };
           copy[index] = {
             ...d,
@@ -230,6 +236,7 @@ const LeaguePlannerPage: React.FC = () => {
               countryCode: day.countryCode,
               leagueName,
               leagueLogo,
+              season,
             },
           ],
           leagueId: "",
@@ -309,7 +316,7 @@ const LeaguePlannerPage: React.FC = () => {
         (l.logo.startsWith("http://") || l.logo.startsWith("https://"))
           ? l.logo
           : undefined,
-      rightTag: l.latestSeason ?? undefined,
+      rightTag: l.latestSeason ?? undefined, // ovo ostaje isto
     }));
   };
 

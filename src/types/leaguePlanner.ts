@@ -1,32 +1,36 @@
 // src/types/leaguePlanner.ts
+
 import type { SportType } from "./ticket";
-
-export interface PlannerLeague {
-  sport: SportType; // "FOOTBALL" | "BASKETBALL"
-  countryCode: string; // ISO code
-  leagueId: string; // backend league id
-  leagueName: string;
-  leagueLogo: string | undefined;
-}
-
-export interface DayPlanState {
-  date: string; // "2025-12-08"
-  leagues: PlannerLeague[];
-  countryCode: string; // current selected country
-  leagueId: string; // current selected league
-  leagueName: string;
-  leagueLogo: string | undefined;
-}
 
 export interface BackendLeague {
   sport: string;
   leagueId: string;
   countryCode: string;
-  leagueName: string;
-  leagueLogo: string | undefined;
+  leagueName?: string | null;
+  leagueLogo?: string | null;
+  season?: string | null; // 🔹 NEW
 }
 
 export interface BackendDayPlan {
-  date: string;
+  date: string; // "2025-12-08"
   leagues: BackendLeague[];
+}
+
+export interface PlannerLeague {
+  sport: SportType;
+  leagueId: string;
+  countryCode: string;
+  leagueName?: string;
+  leagueLogo?: string;
+  season?: string | null; // 🔹 NEW
+}
+
+export interface DayPlanState {
+  date: string;
+  leagues: PlannerLeague[];
+  countryCode: string;
+  leagueId: string;
+  leagueName?: string;
+  leagueLogo?: string;
+  season?: string | null; // optional for selection, not critical
 }
