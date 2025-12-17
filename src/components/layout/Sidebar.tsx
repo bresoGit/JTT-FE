@@ -24,7 +24,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       new Date(startOfToday.getTime() + offsetDays * 24 * 60 * 60 * 1000);
 
     const formatDay = (date: Date, special: DayItem["isSpecial"]): DayItem => {
-      const id = date.toISOString().slice(0, 10); // yyyy-mm-dd
+      // ❌ BUGGY: const id = date.toISOString().slice(0, 10);
+      // ✅ Use LOCAL date parts for yyyy-MM-dd
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const dayNum = String(date.getDate()).padStart(2, "0");
+      const id = `${year}-${month}-${dayNum}`;
 
       const dayName = date.toLocaleDateString("hr-HR", {
         weekday: "short",
