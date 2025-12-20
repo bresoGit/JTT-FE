@@ -1,4 +1,3 @@
-// src/types/tips.ts
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
 
 export interface Tip {
@@ -10,4 +9,10 @@ export interface Tip {
   odds: number;
   kickoff: string;
   confidence: number; // 0-100
+
+  // NEW visual stuff
+  homeLogo?: string | null;
+  awayLogo?: string | null;
+  leagueLogo?: string | null;
+  season?: string | null;
 }

@@ -18,15 +18,18 @@ interface BackendTip {
   matchId: string;
   homeTeam: string;
   awayTeam: string;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
+  leagueLogo?: string | null;
+  season?: string | null;
   label: string;
   odds: number;
   risk: RiskLevel;
-  confidencePct: number;
+  confidencePct: number | null;
   tipDay: string;
   kickoffAt: string | null;
 }
 
-// ✅ zajednički backend URL (Vite stil)
 const BACKEND_URL =
   (import.meta as any).env?.VITE_BACKEND_URL ?? "http://localhost:8080";
 
@@ -36,7 +39,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
   selectedDates,
 }) => {
   const [tips, setTips] = React.useState<Tip[]>([]);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -50,7 +53,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         const params = new URLSearchParams();
 
         // datumi iz sidebara
-        if (selectedDates && selectedDates.length > 0) {
+        if (selectedDates?.length) {
           selectedDates.forEach((d) => params.append("dates", d));
         }
 
@@ -65,9 +68,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         const base = BACKEND_URL.replace(/\/+$/, "");
         const url = `${base}/api/tipovi?${params.toString()}`;
 
-        const res = await fetch(url, {
-          signal: controller.signal,
-        });
+        const res = await fetch(url, { signal: controller.signal });
 
         if (!res.ok) {
           throw new Error(`Greška pri dohvaćanju tipova: ${res.status}`);
@@ -78,7 +79,9 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         const mapped: Tip[] = data.map((t) => {
           const match = `${t.homeTeam} vs. ${t.awayTeam}`;
           const market = t.label;
-          const confidence = t.confidencePct ?? 0;
+
+          const confidence =
+            typeof t.confidencePct === "number" ? t.confidencePct : 0;
 
           let kickoff = "";
           if (t.kickoffAt) {
@@ -97,22 +100,30 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
             risk: t.risk,
             confidence,
             kickoff,
+            homeLogo: t.homeLogo ?? null,
+            awayLogo: t.awayLogo ?? null,
+            leagueLogo: t.leagueLogo ?? null,
+            season: t.season ?? null,
           };
         });
 
         setTips(mapped);
-      } catch (err: any) {
-        if (err.name === "AbortError") return;
-        setError(err.message ?? "Došlo je do greške.");
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        if (err instanceof Error) setError(err.message);
+        else setError("Došlo je do greške.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchTips();
-
     return () => controller.abort();
-  }, [selectedRisk, selectedDates]);
+  }, [
+    selectedRisk,
+    // stabilize dependency: if parent recreates array each render, join prevents infinite fetch loop
+    selectedDates.join(","),
+  ]);
 
   return (
     <section className="rounded-2xl border border-jack-border bg-jack-card/90 p-4 shadow-jack-soft">
@@ -153,7 +164,6 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         </div>
       </div>
 
-      {/* Wrapper za scroll + grid */}
       <div className="max-h-[35rem] overflow-y-auto">
         {loading && (
           <div className="rounded-xl border border-jack-border bg-black/40 px-4 py-6 text-center text-sm text-slate-400">
@@ -168,7 +178,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
         )}
 
         {!loading && !error && tips.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 max-[1100px]:grid-cols-1">
+          <div className="grid grid-cols-1 gap-3">
             {tips.map((tip) => (
               <TipCard key={tip.id} tip={tip} />
             ))}
