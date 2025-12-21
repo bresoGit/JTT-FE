@@ -27,6 +27,7 @@ interface BackendTip {
   risk: RiskLevel;
   confidencePct: number | null;
   tipDay: string;
+  country: string;
   kickoffAt: string | null;
 }
 
@@ -104,6 +105,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
             awayLogo: t.awayLogo ?? null,
             leagueLogo: t.leagueLogo ?? null,
             season: t.season ?? null,
+            country: t.country ?? null,
           };
         });
 

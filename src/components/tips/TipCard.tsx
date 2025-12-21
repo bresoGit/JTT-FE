@@ -22,6 +22,7 @@ const riskContainer: Record<RiskLevel, string> = {
 };
 
 const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
+  console.log(tip.country);
   return (
     <article
       className={`group flex flex-col gap-3 rounded-2xl border p-3 text-sm transition hover:border-jack-red/90 hover:brightness-110
@@ -35,13 +36,14 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
             <img
               src={tip.leagueLogo}
               alt={tip.league}
-              className="h-6 w-6 rounded-full bg-black/60 object-contain p-0.5"
+              className="h-6 w-6 rounded-full bg-white object-contain p-0.5"
             />
           )}
           <div className="flex flex-col">
             <span className="text-[11px] uppercase tracking-wide text-slate-500">
               {tip.league}
               {tip.season ? ` • ${tip.season}` : ""}
+              {` • ${tip.country}`}
             </span>
           </div>
         </div>

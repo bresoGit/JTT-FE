@@ -15,4 +15,6 @@ export interface Tip {
   awayLogo?: string | null;
   leagueLogo?: string | null;
   season?: string | null;
+
+  country?: string | null;
 }
