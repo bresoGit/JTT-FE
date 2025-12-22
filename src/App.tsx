@@ -14,6 +14,7 @@ import LeaguePlannerPage from "./pages/LeaguePlannerPage";
 import HomePage from "./pages/HomePage";
 
 import { getPreferredHome } from "./utils/preferredHome";
+import LotteryDetailsPage from "./pages/LotteryDetailsPage";
 
 const RISK_STORAGE_KEY = "jack_selectedRisk";
 const DATES_STORAGE_KEY = "jack_selectedDates";
@@ -152,6 +153,7 @@ const App: React.FC = () => {
             <Route path="/prijava" element={<LoginPage />} />
             <Route path="/registracija" element={<RegisterPage />} />
             <Route path="/profil" element={<UserPage />} />
+            <Route path="/loto/:id" element={<LotteryDetailsPage />} />
           </Routes>
         </main>
 
