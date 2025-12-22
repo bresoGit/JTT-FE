@@ -1,18 +1,17 @@
 // src/App.tsx
 import React from "react";
 import { Routes, Route } from "react-router-dom";
-import TipsPanel from "./components/tips/TipsPanel";
 import type { RiskLevel } from "./types/tips";
 
-import Sidebar from "./components/layout/Sidebar";
 import Footer from "./components/layout/Footer";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import TicketBuilderPage from "./pages/TicketBuilderPage";
 import NavHeader from "./components/layout/NavHeader";
-import HeroSection from "./components/layout/HeroSection";
 import UserPage from "./pages/UserPage";
-import LeaguePlannerPage from "./pages/LeaguePlannerPage"; // 👈 NEW
+import LeaguePlannerPage from "./pages/LeaguePlannerPage";
+
+import HomePage from "./pages/HomePage"; // 👈 NEW
 
 const RISK_STORAGE_KEY = "jack_selectedRisk";
 const DATES_STORAGE_KEY = "jack_selectedDates";
@@ -60,9 +59,7 @@ const App: React.FC = () => {
           return parsed;
         }
       }
-    } catch {
-      // ignore parse errors
-    }
+    } catch {}
 
     const today = new Date();
     const iso = today.toISOString().slice(0, 10);
@@ -101,28 +98,31 @@ const App: React.FC = () => {
             <Route
               path="/"
               element={
-                <div className="flex flex-1 flex-col gap-4 md:flex-row">
-                  <section className="flex-1 space-y-4">
-                    <HeroSection />
-                    <TipsPanel
-                      selectedRisk={selectedRisk}
-                      onRiskChange={setSelectedRisk}
-                      selectedDates={selectedDates}
-                    />
-                  </section>
-
-                  <aside className="mt-4 w-full md:mt-0 md:w-80">
-                    <Sidebar
-                      selectedDates={selectedDates}
-                      onChangeSelectedDates={setSelectedDates}
-                    />
-                  </aside>
-                </div>
+                <HomePage
+                  mode="TICKETS"
+                  selectedRisk={selectedRisk}
+                  onRiskChange={setSelectedRisk}
+                  selectedDates={selectedDates}
+                  onChangeSelectedDates={setSelectedDates}
+                />
               }
             />
+
+            <Route
+              path="/loto"
+              element={
+                <HomePage
+                  mode="LOTTO"
+                  selectedRisk={selectedRisk}
+                  onRiskChange={setSelectedRisk}
+                  selectedDates={selectedDates}
+                  onChangeSelectedDates={setSelectedDates}
+                />
+              }
+            />
+
             <Route path="/jack" element={<TicketBuilderPage />} />
-            <Route path="/plan-liga" element={<LeaguePlannerPage />} />{" "}
-            {/* 👈 NEW */}
+            <Route path="/plan-liga" element={<LeaguePlannerPage />} />
             <Route path="/prijava" element={<LoginPage />} />
             <Route path="/registracija" element={<RegisterPage />} />
             <Route path="/profil" element={<UserPage />} />

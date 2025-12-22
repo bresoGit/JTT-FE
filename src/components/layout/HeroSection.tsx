@@ -1,12 +1,18 @@
 // src/components/layout/HeroSection.tsx
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import JttLogo from "../../assets/jtt_logo.png"; // kasnije možeš promijeniti asset
+import JttLogo from "../../assets/jtt_logo.png";
 import { useUser } from "../../context/UserContext";
 
-const HeroSection: React.FC = () => {
+type Props = {
+  mode: "TICKETS" | "LOTTO";
+};
+
+const HeroSection: React.FC<Props> = ({ mode }) => {
   const navigate = useNavigate();
   const { user } = useUser();
+
+  const isTickets = mode === "TICKETS";
 
   const handleStartJack = () => {
     if (!user) {
@@ -68,39 +74,79 @@ const HeroSection: React.FC = () => {
       {/* RIGHT SIDE — Hero content */}
       <div className="flex flex-col justify-center space-y-3 md:pl-4">
         <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-red-300">
-          Ripperov rez
+          {isTickets ? "Ripperov rez" : "Lutrija / Loto"}
         </p>
 
         <h2 className="text-2xl font-bold leading-tight md:text-3xl">
-          Jackpot pod giljotinom.
-          <br className="hidden md:block" />
-          Brojevi, kombinacije i listići pod nožem.
+          {isTickets ? (
+            <>
+              Jackpot pod giljotinom.
+              <br className="hidden md:block" />
+              Brojevi, kombinacije i listići pod nožem.
+            </>
+          ) : (
+            <>
+              Loto pod giljotinom.
+              <br className="hidden md:block" />
+              Kombinacije i brojevi pod nožem.
+            </>
+          )}
         </h2>
 
         <p className="text-sm text-slate-300">
-          Jackpot The Ripper ti pomaže slagati pametnije loto kombinacije i
-          sportske listiće. AI filtrira brojeve, kombinacije i parove, a ti
-          biraš koliko želiš rezati rizik – od opreznog do totalno krvavog.
+          {isTickets
+            ? "Jackpot The Ripper ti pomaže slagati sportske listiće. AI filtrira parove i koefove, a ti biraš koliko želiš rezati rizik."
+            : "Ovdje ide Lottery feature. Za sada je samo placeholder sadržaj."}
         </p>
 
-        <ul className="space-y-1 text-xs text-slate-300">
-          <li>
-            • Fokus na lutriji: predložene kombinacije, filteri i strategije
-          </li>
-          <li>• Sportski listići ostaju: isti alati za parove i koefove</li>
-          <li>
-            • Ripper mod: razreži postojeći listić u optimizirane varijante
-          </li>
-          <li>• Free verzija s oglasima ili Premium bez distrakcija</li>
-        </ul>
-
+        {/* SECTION SWITCH + CTA */}
         <div className="mt-2 flex flex-wrap items-center gap-3">
+          {/* Section buttons */}
           <button
-            className="rounded-2xl bg-jack-red px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_30px_rgba(248,113,113,0.9)] hover:bg-red-600"
-            onClick={handleStartJack}
+            type="button"
+            onClick={() => navigate("/")}
+            className={`rounded-2xl border px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition ${
+              isTickets
+                ? "border-red-400/90 bg-red-900/40 text-red-100 shadow-[0_0_20px_rgba(248,113,113,0.9)]"
+                : "border-jack-border bg-black/40 text-slate-200 hover:border-red-400 hover:text-red-100"
+            }`}
           >
-            Pokreni Rippera
+            Listići
           </button>
+
+          <button
+            type="button"
+            onClick={() => navigate("/loto")}
+            className={`rounded-2xl border px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition ${
+              !isTickets
+                ? "border-red-400/90 bg-red-900/40 text-red-100 shadow-[0_0_20px_rgba(248,113,113,0.9)]"
+                : "border-jack-border bg-black/40 text-slate-200 hover:border-red-400 hover:text-red-100"
+            }`}
+          >
+            Loto
+          </button>
+
+          {/* CTA differs per section */}
+          {isTickets ? (
+            <button
+              className="rounded-2xl bg-jack-red px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_30px_rgba(248,113,113,0.9)] hover:bg-red-600"
+              onClick={handleStartJack}
+            >
+              Pokreni Jacka
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="rounded-2xl bg-jack-red px-5 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_30px_rgba(248,113,113,0.9)] hover:bg-red-600"
+              onClick={() => {
+                // placeholder for lotto start
+                console.log("TODO: start lotto");
+              }}
+            >
+              Pokreni Loto
+            </button>
+          )}
+
           {!user && (
             <button
               type="button"

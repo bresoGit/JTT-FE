@@ -10,6 +10,7 @@ export default function NavHeader() {
   const { user, isAuthenticated, logout } = useUser();
 
   const isHome = location.pathname === "/";
+  const isLotto = location.pathname === "/loto";
   const isLogin = location.pathname === "/prijava";
   const isRegister = location.pathname === "/registracija";
   const isPlanner = location.pathname === "/plan-liga";
@@ -90,7 +91,7 @@ export default function NavHeader() {
 
       {/* RIGHT: giljotina status + planner link */}
       <div className="flex items-center justify-end gap-3">
-        {isAuthenticated && (
+        {isAuthenticated && !isLotto && (
           <button
             type="button"
             onClick={() => navigate("/plan-liga")}
