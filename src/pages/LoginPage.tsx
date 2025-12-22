@@ -2,6 +2,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { getPreferredHome } from "../utils/preferredHome";
 
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ||
@@ -17,12 +18,15 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login, isAuthenticated } = useUser();
 
-  // ako je već logiran, nema smisla biti na loginu
+  const preferredHome = getPreferredHome();
+  const isLottoTheme = preferredHome === "/loto";
+
+  // if already authenticated -> go to preferred home
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(preferredHome);
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, preferredHome]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,9 +36,7 @@ const LoginPage: React.FC = () => {
     try {
       const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ usernameOrEmail, password }),
       });
 
@@ -44,11 +46,10 @@ const LoginPage: React.FC = () => {
       }
 
       const data = await res.json();
-
-      // upiši u globalni UserContext (ovo interno rješava i localStorage)
       login({ user: data.user, token: data.token });
 
-      navigate("/");
+      // go back to preferred section
+      navigate(preferredHome);
     } catch (err: any) {
       setError(err.message || "Greška pri prijavi");
     } finally {
@@ -56,14 +57,46 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  const cardBorder = isLottoTheme
+    ? "border-amber-500/25"
+    : "border-jack-border";
+  const focusRing = isLottoTheme
+    ? "focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+    : "focus:border-jack-red focus:ring-1 focus:ring-jack-red";
+
+  const primaryBtn = isLottoTheme
+    ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-black shadow-[0_0_22px_rgba(251,191,36,0.55)] hover:brightness-110"
+    : "bg-jack-red text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.85)] hover:bg-red-600";
+
+  const linkColor = isLottoTheme
+    ? "text-amber-300 hover:text-amber-200"
+    : "text-red-300 hover:text-red-200";
+
   return (
     <div className="flex flex-1 items-center justify-center py-6">
-      <div className="w-full max-w-md rounded-2xl border border-jack-border bg-black/70 p-6 shadow-jack-soft">
-        <h2 className="text-xl font-semibold tracking-tight text-slate-100">
+      <div
+        className={[
+          "w-full max-w-md rounded-2xl border bg-black/70 p-6 shadow-jack-soft",
+          cardBorder,
+        ].join(" ")}
+      >
+        <p
+          className={[
+            "text-[11px] font-semibold uppercase tracking-[0.25em]",
+            isLottoTheme ? "text-amber-300" : "text-red-300",
+          ].join(" ")}
+        >
+          {isLottoTheme ? "Lutrija / Loto" : "Jack / Listići"}
+        </p>
+
+        <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-100">
           Prijava
         </h2>
+
         <p className="mt-1 text-xs text-slate-400">
-          Vrati se u Jackovu tamnicu tipova.
+          {isLottoTheme
+            ? "Vrati se u zlatni mod kombinacija."
+            : "Vrati se u Jackovu tamnicu tipova."}
         </p>
 
         <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-sm">
@@ -75,8 +108,9 @@ const LoginPage: React.FC = () => {
               type="text"
               value={usernameOrEmail}
               onChange={(e) => setUsernameOrEmail(e.target.value)}
-              className="w-full rounded-xl border border-jack-border bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-jack-red focus:ring-1 focus:ring-jack-red"
+              className={`w-full rounded-xl border ${cardBorder} bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none ${focusRing}`}
               placeholder="tvoj.username ili email"
+              autoComplete="username"
             />
           </div>
 
@@ -88,8 +122,9 @@ const LoginPage: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-jack-border bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-jack-red focus:ring-1 focus:ring-jack-red"
+              className={`w-full rounded-xl border ${cardBorder} bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none ${focusRing}`}
               placeholder="••••••••"
+              autoComplete="current-password"
             />
           </div>
 
@@ -102,7 +137,11 @@ const LoginPage: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 w-full rounded-2xl bg-jack-red px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.85)] hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className={[
+              "mt-2 w-full rounded-2xl px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide transition",
+              "disabled:cursor-not-allowed disabled:opacity-60",
+              primaryBtn,
+            ].join(" ")}
           >
             {loading ? "Prijava..." : "Prijavi se"}
           </button>
@@ -110,14 +149,17 @@ const LoginPage: React.FC = () => {
 
         <p className="mt-4 text-[11px] text-slate-400">
           Nemaš račun?{" "}
-          <Link
-            to="/registracija"
-            className="font-semibold text-red-300 hover:text-red-200"
-          >
+          <Link to="/registracija" className={`font-semibold ${linkColor}`}>
             Registriraj se
           </Link>
           .
         </p>
+
+        <div className="mt-2 text-[11px] text-slate-500">
+          <Link to={preferredHome} className={linkColor}>
+            ← Natrag
+          </Link>
+        </div>
       </div>
     </div>
   );

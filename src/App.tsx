@@ -1,6 +1,6 @@
 // src/App.tsx
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import type { RiskLevel } from "./types/tips";
 
 import Footer from "./components/layout/Footer";
@@ -11,13 +11,21 @@ import NavHeader from "./components/layout/NavHeader";
 import UserPage from "./pages/UserPage";
 import LeaguePlannerPage from "./pages/LeaguePlannerPage";
 
-import HomePage from "./pages/HomePage"; // 👈 NEW
+import HomePage from "./pages/HomePage";
+
+import { getPreferredHome } from "./utils/preferredHome";
 
 const RISK_STORAGE_KEY = "jack_selectedRisk";
 const DATES_STORAGE_KEY = "jack_selectedDates";
 
 const App: React.FC = () => {
-  // ... (your existing state + effects remain exactly the same)
+  const location = useLocation();
+
+  // Theme logic:
+  // - If you're on /loto -> lotto theme
+  // - Else use cached preference (so /profil inherits lotto if you came from lotto)
+  const isLottoUI =
+    location.pathname.startsWith("/loto") || getPreferredHome() === "/loto";
 
   const [selectedRisk, setSelectedRisk] = React.useState<RiskLevel | "ALL">(
     () => {
@@ -84,10 +92,28 @@ const App: React.FC = () => {
   }, [selectedDates]);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-black via-jack-redMuted to-jack-border text-slate-100 overflow-hidden">
-      <div className="pointer-events-none fixed inset-0 opacity-60">
-        <div className="absolute -top-32 right-0 h-72 w-72 rounded-full bg-red-500/20 blur-3xl" />
-        <div className="absolute bottom-[-6rem] left-[-4rem] h-80 w-80 rounded-full bg-black/60 blur-3xl" />
+    <div
+      className={[
+        "relative min-h-screen text-slate-100 overflow-hidden",
+        isLottoUI
+          ? "bg-gradient-to-br from-black via-amber-950/40 to-zinc-950"
+          : "bg-gradient-to-br from-black via-jack-redMuted to-jack-border",
+      ].join(" ")}
+    >
+      <div className="pointer-events-none fixed inset-0 opacity-70">
+        {isLottoUI ? (
+          <>
+            <div className="absolute -top-32 right-[-3rem] h-80 w-80 rounded-full bg-amber-400/15 blur-3xl" />
+            <div className="absolute top-40 left-[-6rem] h-72 w-72 rounded-full bg-yellow-300/10 blur-3xl" />
+            <div className="absolute bottom-[-7rem] left-[-4rem] h-96 w-96 rounded-full bg-black/60 blur-3xl" />
+            <div className="absolute bottom-[-5rem] right-[-5rem] h-96 w-96 rounded-full bg-amber-500/10 blur-3xl" />
+          </>
+        ) : (
+          <>
+            <div className="absolute -top-32 right-0 h-72 w-72 rounded-full bg-red-500/20 blur-3xl" />
+            <div className="absolute bottom-[-6rem] left-[-4rem] h-80 w-80 rounded-full bg-black/60 blur-3xl" />
+          </>
+        )}
       </div>
 
       <div className="relative mx-auto flex min-h-screen max-w-[90%] flex-col px-4 py-4 md:px-6 lg:px-8">

@@ -3,14 +3,18 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import JttLogo from "../../assets/jtt_logo.png";
 import { useUser } from "../../context/UserContext";
 import UserBadge from "../ui/UserBadge";
+import { getPreferredHome } from "../../utils/preferredHome";
 
 export default function NavHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useUser();
 
+  const preferredHome = getPreferredHome();
+  const isLottoTheme =
+    location.pathname.startsWith("/loto") || preferredHome === "/loto";
+
   const isHome = location.pathname === "/";
-  const isLotto = location.pathname === "/loto";
   const isLogin = location.pathname === "/prijava";
   const isRegister = location.pathname === "/registracija";
   const isPlanner = location.pathname === "/plan-liga";
@@ -24,25 +28,30 @@ export default function NavHeader() {
 
   return (
     <header
-      className="flex items-center justify-between rounded-2xl border border-jack-border bg-gradient-to-r from-jack-card via-jack-redMuted/20 to-jack-card px-4 py-3 shadow-jack-soft
-             max-[900px]:flex-col max-[900px]:items-stretch max-[900px]:gap-3"
+      className={[
+        "flex items-center justify-between rounded-2xl border px-4 py-3",
+        "shadow-jack-soft max-[900px]:flex-col max-[900px]:items-stretch max-[900px]:gap-3",
+        isLottoTheme
+          ? "border-amber-500/25 bg-gradient-to-r from-zinc-950 via-amber-950/25 to-zinc-950"
+          : "border-jack-border bg-gradient-to-r from-jack-card via-jack-redMuted/20 to-jack-card",
+      ].join(" ")}
     >
-      {/* LEFT: logo + auth / user info */}
       <div className="flex items-center gap-3">
-        {/* Logo link */}
+        {/* Logo link -> preferred home */}
         <Link
-          to="/"
+          to={preferredHome}
           className={`flex items-center transition-transform duration-150 ${
             isHome ? "scale-105" : "hover:scale-105"
           }`}
         >
           <div
-            className={`flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-black/70 ring-1 ring-red-500/60 transition-shadow duration-150
-            ${
-              isHome
-                ? "shadow-[0_0_30px_rgba(248,113,113,1)]"
-                : "shadow-[0_0_18px_rgba(248,113,113,0.7)] hover:shadow-[0_0_30px_rgba(248,113,113,1)]"
-            }`}
+            className={[
+              "flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-black/70 ring-1 transition-shadow duration-150",
+              isLottoTheme ? "ring-amber-400/60" : "ring-red-500/60",
+              isLottoTheme
+                ? "shadow-[0_0_18px_rgba(251,191,36,0.55)] hover:shadow-[0_0_28px_rgba(251,191,36,0.7)]"
+                : "shadow-[0_0_18px_rgba(248,113,113,0.7)] hover:shadow-[0_0_30px_rgba(248,113,113,1)]",
+            ].join(" ")}
           >
             <img
               src={JttLogo}
@@ -52,29 +61,30 @@ export default function NavHeader() {
           </div>
         </Link>
 
-        {/* Auth zone / user zone */}
         {!isAuthenticated || !user ? (
           <div className="flex items-center gap-2">
             <Link
               to="/prijava"
-              className={`rounded-2xl border bg-gradient-to-r from-black via-red-900/40 to-black px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-red-100 ring-1 transition
-            ${
-              isLogin
-                ? "border-red-400/90 ring-red-500/90 shadow-[0_0_35px_rgba(248,113,113,1)] brightness-125"
-                : "border-red-400/70 ring-red-500/70 shadow-[0_0_28px_rgba(248,113,113,0.95)] hover:brightness-125 hover:shadow-[0_0_35px_rgba(248,113,113,1)]"
-            }`}
+              className={[
+                "rounded-2xl border bg-gradient-to-r from-black to-black px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide ring-1 transition",
+                isLottoTheme
+                  ? "via-amber-900/20 text-amber-100 border-amber-400/70 ring-amber-500/70 shadow-[0_0_22px_rgba(251,191,36,0.55)] hover:brightness-110"
+                  : "via-red-900/40 text-red-100 border-red-400/70 ring-red-500/70 shadow-[0_0_28px_rgba(248,113,113,0.95)] hover:brightness-125",
+                isLogin ? "brightness-110" : "",
+              ].join(" ")}
             >
               Prijava
             </Link>
 
             <Link
               to="/registracija"
-              className={`rounded-2xl bg-gradient-to-r from-jack-red to-red-600 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.95)] transition
-            ${
-              isRegister
-                ? "brightness-110 shadow-[0_0_30px_rgba(248,113,113,1)]"
-                : "hover:brightness-110"
-            }`}
+              className={[
+                "rounded-2xl px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition",
+                isLottoTheme
+                  ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-black shadow-[0_0_20px_rgba(251,191,36,0.55)] hover:brightness-110"
+                  : "bg-gradient-to-r from-jack-red to-red-600 text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.95)] hover:brightness-110",
+                isRegister ? "brightness-110" : "",
+              ].join(" ")}
             >
               Registracija
             </Link>
@@ -85,13 +95,14 @@ export default function NavHeader() {
             initials={initials}
             onLogout={logout}
             onProfileClick={() => navigate("/profil")}
+            variant={isLottoTheme ? "LOTTO" : "TICKETS"}
           />
         )}
       </div>
 
-      {/* RIGHT: giljotina status + planner link */}
       <div className="flex items-center justify-end gap-3">
-        {isAuthenticated && !isLotto && (
+        {/* Hide Plan liga when preferred theme is lotto */}
+        {isAuthenticated && !isLottoTheme && (
           <button
             type="button"
             onClick={() => navigate("/plan-liga")}
@@ -106,9 +117,26 @@ export default function NavHeader() {
           </button>
         )}
 
-        <div className="flex items-center gap-2 rounded-2xl border border-jack-border bg-jack-card px-3 py-1.5 text-xs">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span className="text-slate-300">Giljotina spremna</span>
+        <div
+          className={[
+            "flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs",
+            isLottoTheme
+              ? "border-amber-500/25 bg-black/55"
+              : "border-jack-border bg-jack-card",
+          ].join(" ")}
+        >
+          <span
+            className={`h-2 w-2 rounded-full ${
+              isLottoTheme ? "bg-amber-300" : "bg-emerald-400"
+            }`}
+          />
+          <span
+            className={`${
+              isLottoTheme ? "text-amber-100/90" : "text-slate-300"
+            }`}
+          >
+            {isLottoTheme ? "Sreća na nišanu" : "Giljotina spremna"}
+          </span>
         </div>
       </div>
     </header>

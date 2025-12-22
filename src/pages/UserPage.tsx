@@ -2,6 +2,7 @@
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useUser } from "../context/UserContext";
+import { getPreferredHome } from "../utils/preferredHome";
 
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ||
@@ -23,6 +24,9 @@ const UserPage: React.FC = () => {
   const { user, token, isAuthenticated } = useUser();
   const navigate = useNavigate();
 
+  const preferredHome = getPreferredHome();
+  const isLottoTheme = preferredHome === "/loto";
+
   const [profile, setProfile] = React.useState<UserProfileResponse | null>(
     user
       ? {
@@ -38,7 +42,6 @@ const UserPage: React.FC = () => {
       : null
   );
 
-  // modal state
   const [isPwModalOpen, setIsPwModalOpen] = React.useState(false);
   const [oldPassword, setOldPassword] = React.useState("");
   const [newPassword, setNewPassword] = React.useState("");
@@ -47,21 +50,14 @@ const UserPage: React.FC = () => {
   const [pwSuccess, setPwSuccess] = React.useState<string | null>(null);
   const [pwLoading, setPwLoading] = React.useState(false);
 
-  // ako stvarno nisi prijavljen → odi na prijavu
   React.useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/prijava");
-    }
+    if (!isAuthenticated) navigate("/prijava");
   }, [isAuthenticated, navigate]);
 
-  // 🔥 minimalan, uvijek-pozovi /me efekt
   React.useEffect(() => {
-    // pokušaj uzeti token iz contexta ili iz localStorage
     const storedToken =
       token || localStorage.getItem("jtt_auth_token") || undefined;
 
-    // uvijek napravi jedan pokušaj – čak i bez tokena (onda će backend vratiti 401/403,
-    // ali ti ćeš BAREM vidjeti request u Network tabu)
     const fetchProfile = async () => {
       try {
         const res = await fetch(`${BACKEND_URL}/api/users/me`, {
@@ -71,20 +67,14 @@ const UserPage: React.FC = () => {
           },
         });
 
-        if (!res.ok) {
-          // ovdje možeš dobiti 401/403 – ali poziv će postojati
-          return;
-        }
+        if (!res.ok) return;
 
         const data: UserProfileResponse = await res.json();
         setProfile(data);
-      } catch {
-        // ignore network errors for now
-      }
+      } catch {}
     };
 
     fetchProfile();
-    // prazan dependency array => pozove se SAMO jednom kad se UserPage mounta
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openPasswordModal = () => {
@@ -96,9 +86,7 @@ const UserPage: React.FC = () => {
     setIsPwModalOpen(true);
   };
 
-  const closePasswordModal = () => {
-    setIsPwModalOpen(false);
-  };
+  const closePasswordModal = () => setIsPwModalOpen(false);
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +104,6 @@ const UserPage: React.FC = () => {
 
     const storedToken =
       token || localStorage.getItem("jtt_auth_token") || undefined;
-
     if (!storedToken) {
       setPwError("Nisi prijavljen. Prijavi se ponovno.");
       return;
@@ -130,10 +117,7 @@ const UserPage: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${storedToken}`,
         },
-        body: JSON.stringify({
-          oldPassword,
-          newPassword,
-        }),
+        body: JSON.stringify({ oldPassword, newPassword }),
       });
 
       if (!res.ok) {
@@ -167,13 +151,29 @@ const UserPage: React.FC = () => {
     );
   }
 
+  const cardBorder = isLottoTheme
+    ? "border-amber-500/25"
+    : "border-jack-border";
+  const cardBg = "bg-black/70";
+  const linkColor = isLottoTheme
+    ? "text-amber-300 hover:text-amber-200"
+    : "text-red-300 hover:text-red-200";
+  const primaryBtn = isLottoTheme
+    ? "bg-gradient-to-r from-amber-400 to-yellow-300 text-black shadow-[0_0_24px_rgba(251,191,36,0.55)] hover:brightness-110"
+    : "bg-jack-red text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.85)] hover:bg-red-600";
+
+  const inputFocus = isLottoTheme
+    ? "focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+    : "focus:border-jack-red focus:ring-1 focus:ring-jack-red";
+
   return (
     <div className="flex flex-1 flex-col items-center py-6">
       <div className="w-full max-w-2xl space-y-4">
-        {/* Osnovni podaci */}
-        <div className="rounded-2xl border border-jack-border bg-black/70 p-6 shadow-jack-soft">
+        <div
+          className={`rounded-2xl border ${cardBorder} ${cardBg} p-6 shadow-jack-soft`}
+        >
           <h2 className="text-xl font-semibold tracking-tight text-slate-100">
-            Tvoj Jack profil
+            {isLottoTheme ? "Tvoj Loto profil" : "Tvoj Jack profil"}
           </h2>
           <p className="mt-1 text-xs text-slate-400">
             Pregled osnovnih podataka o korisniku.
@@ -211,35 +211,37 @@ const UserPage: React.FC = () => {
           </div>
 
           <div className="mt-4 text-[11px] text-slate-500">
-            <Link to="/" className="text-red-300 hover:text-red-200">
-              ← Natrag na tipove
+            <Link to={preferredHome} className={linkColor}>
+              ← Natrag
             </Link>
           </div>
         </div>
 
-        {/* Promjena lozinke – samo gumb */}
-        <div className="rounded-2xl border border-jack-border bg-black/70 p-6 shadow-jack-soft">
+        <div
+          className={`rounded-2xl border ${cardBorder} ${cardBg} p-6 shadow-jack-soft`}
+        >
           <h3 className="text-sm font-semibold tracking-tight text-slate-100">
             Sigurnost računa
           </h3>
           <p className="mt-1 text-[11px] text-slate-400">
-            Želiš promijeniti lozinku za svoj Jack The Tipster račun?
+            Želiš promijeniti lozinku za svoj račun?
           </p>
 
           <button
             type="button"
             onClick={openPasswordModal}
-            className="mt-4 rounded-2xl bg-jack-red px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.85)] hover:bg-red-600"
+            className={`mt-4 rounded-2xl px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wide transition ${primaryBtn}`}
           >
             Promijeni lozinku
           </button>
         </div>
       </div>
 
-      {/* MODAL za promjenu lozinke */}
       {isPwModalOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-jack-border bg-black/90 p-6 shadow-[0_0_40px_rgba(0,0,0,0.9)]">
+          <div
+            className={`w-full max-w-md rounded-2xl border ${cardBorder} bg-black/90 p-6 shadow-[0_0_40px_rgba(0,0,0,0.9)]`}
+          >
             <div className="flex items-center justify-between gap-4">
               <h3 className="text-sm font-semibold tracking-tight text-slate-100">
                 Promjena lozinke
@@ -247,11 +249,16 @@ const UserPage: React.FC = () => {
               <button
                 type="button"
                 onClick={closePasswordModal}
-                className="text-xs text-slate-400 hover:text-red-300"
+                className={`text-xs ${
+                  isLottoTheme
+                    ? "text-slate-400 hover:text-amber-200"
+                    : "text-slate-400 hover:text-red-300"
+                }`}
               >
                 Zatvori ✕
               </button>
             </div>
+
             <p className="mt-1 text-[11px] text-slate-400">
               Unesi staru lozinku i novu lozinku. Pazi da novu upišeš dva puta
               isto.
@@ -269,7 +276,7 @@ const UserPage: React.FC = () => {
                   type="password"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
-                  className="w-full rounded-xl border border-jack-border bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-jack-red focus:ring-1 focus:ring-jack-red"
+                  className={`w-full rounded-xl border ${cardBorder} bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none ${inputFocus}`}
                   placeholder="••••••••"
                 />
               </div>
@@ -282,7 +289,7 @@ const UserPage: React.FC = () => {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full rounded-xl border border-jack-border bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-jack-red focus:ring-1 focus:ring-jack-red"
+                  className={`w-full rounded-xl border ${cardBorder} bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none ${inputFocus}`}
                   placeholder="••••••••"
                 />
               </div>
@@ -295,7 +302,7 @@ const UserPage: React.FC = () => {
                   type="password"
                   value={repeatPassword}
                   onChange={(e) => setRepeatPassword(e.target.value)}
-                  className="w-full rounded-xl border border-jack-border bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none focus:border-jack-red focus:ring-1 focus:ring-jack-red"
+                  className={`w-full rounded-xl border ${cardBorder} bg-black/70 px-3 py-2 text-sm text-slate-100 outline-none ${inputFocus}`}
                   placeholder="••••••••"
                 />
               </div>
@@ -315,14 +322,23 @@ const UserPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={closePasswordModal}
-                  className="rounded-2xl border border-jack-border bg-black/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-200 hover:border-red-400 hover:bg-black/90 hover:text-red-200"
+                  className={[
+                    "rounded-2xl border bg-black/70 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide transition",
+                    isLottoTheme
+                      ? "border-amber-500/25 text-slate-200 hover:border-amber-400 hover:text-amber-100 hover:bg-black/90"
+                      : "border-jack-border text-slate-200 hover:border-red-400 hover:bg-black/90 hover:text-red-200",
+                  ].join(" ")}
                 >
                   Odustani
                 </button>
+
                 <button
                   type="submit"
                   disabled={pwLoading}
-                  className="rounded-2xl bg-jack-red px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-red-50 shadow-[0_0_24px_rgba(248,113,113,0.85)] hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+                  className={[
+                    "rounded-2xl px-4 py-2 text-[11px] font-semibold uppercase tracking-wide transition disabled:cursor-not-allowed disabled:opacity-60",
+                    primaryBtn,
+                  ].join(" ")}
                 >
                   {pwLoading ? "Mijenjam..." : "Spremi novu lozinku"}
                 </button>
