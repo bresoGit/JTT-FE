@@ -1,5 +1,7 @@
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
 
+export type JelProslo = "D" | "N" | null;
+
 export interface Tip {
   id: number;
   risk: RiskLevel;
@@ -17,4 +19,8 @@ export interface Tip {
   season?: string | null;
 
   country?: string | null;
+
+  // ✅ NEW (settlement)
+  rezultat?: string | null; // e.g. "2:1" or "98:92 - 45:40"
+  jelProslo?: JelProslo; // "D" | "N" | null
 }

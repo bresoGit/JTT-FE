@@ -1,6 +1,5 @@
 // src/components/tips/TipsPanel.tsx
 import React from "react";
-
 import TipCard from "./TipCard";
 import type { RiskLevel, Tip } from "../../types/tips";
 import RiskFilterButton from "./RiskFilterButtons";
@@ -8,7 +7,7 @@ import RiskFilterButton from "./RiskFilterButtons";
 interface TipsPanelProps {
   selectedRisk: RiskLevel | "ALL";
   onRiskChange: (r: RiskLevel | "ALL") => void;
-  selectedDates: string[]; // npr. ["2025-12-03", "2025-12-02"]
+  selectedDates: string[];
 }
 
 interface BackendTip {
@@ -22,13 +21,19 @@ interface BackendTip {
   awayLogo?: string | null;
   leagueLogo?: string | null;
   season?: string | null;
+  country?: string | null;
+
   label: string;
   odds: number;
   risk: RiskLevel;
   confidencePct: number | null;
+
   tipDay: string;
-  country: string;
   kickoffAt: string | null;
+
+  // ✅ NEW from backend
+  rezultat?: string | null;
+  jelProslo?: "D" | "N" | null;
 }
 
 const BACKEND_URL =
@@ -53,17 +58,15 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
 
         const params = new URLSearchParams();
 
-        // datumi iz sidebara
         if (selectedDates?.length) {
           selectedDates.forEach((d) => params.append("dates", d));
         }
 
-        // risk filter – backend ignorira ako je ALL/null
         if (selectedRisk !== "ALL") {
           params.append("risk", selectedRisk);
         }
 
-        // sport hardkodiran na "nogomet" (kako smo dogovorili)
+        // sport hardcoded for now
         params.append("sport", "nogomet");
 
         const base = BACKEND_URL.replace(/\/+$/, "");
@@ -101,11 +104,16 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
             risk: t.risk,
             confidence,
             kickoff,
+
             homeLogo: t.homeLogo ?? null,
             awayLogo: t.awayLogo ?? null,
             leagueLogo: t.leagueLogo ?? null,
             season: t.season ?? null,
             country: t.country ?? null,
+
+            // ✅ NEW
+            rezultat: t.rezultat ?? null,
+            jelProslo: t.jelProslo ?? null,
           };
         });
 
@@ -121,11 +129,7 @@ const TipsPanel: React.FC<TipsPanelProps> = ({
 
     fetchTips();
     return () => controller.abort();
-  }, [
-    selectedRisk,
-    // stabilize dependency: if parent recreates array each render, join prevents infinite fetch loop
-    selectedDates.join(","),
-  ]);
+  }, [selectedRisk, selectedDates.join(",")]);
 
   return (
     <section className="rounded-2xl border border-jack-border bg-jack-card/90 p-4 shadow-jack-soft">

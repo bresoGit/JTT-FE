@@ -21,15 +21,54 @@ const riskContainer: Record<RiskLevel, string> = {
   HIGH: "border-red-600/60 bg-gradient-to-br from-black/80 via-jack-redMuted/20 to-black/95 shadow-[inset_0_0_20px_rgba(248,113,113,0.55)]",
 };
 
+function formatRezultat(raw?: string | null) {
+  if (!raw) return "";
+  const s = raw.trim();
+
+  // Match "1:2 - 0:1" (allow arbitrary spacing around "-")
+  const parts = s.split(/\s*-\s*/);
+  if (parts.length === 2) {
+    const ft = parts[0].trim();
+    const ht = parts[1].trim();
+    if (ft && ht) return `${ft} (${ht})`;
+  }
+
+  return s;
+}
+
+function outcomeMeta(jelProslo: Tip["jelProslo"]) {
+  if (jelProslo === "D") {
+    return {
+      label: "PROŠLO",
+      className: "bg-emerald-500/10 text-emerald-300 border-emerald-500/40",
+    };
+  }
+  if (jelProslo === "N") {
+    return {
+      label: "PALO",
+      className: "bg-red-500/10 text-red-300 border-red-500/50",
+    };
+  }
+  return {
+    label: "U TIJEKU",
+    className: "bg-slate-500/10 text-slate-300 border-slate-500/40",
+  };
+}
+
 const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
-  console.log(tip.country);
+  const [home, away] = tip.match.split(" vs. ");
+  const outcome = outcomeMeta(tip.jelProslo);
+
+  const hasRezultat =
+    typeof tip.rezultat === "string" && tip.rezultat.trim() !== "";
+
   return (
     <article
       className={`group flex flex-col gap-3 rounded-2xl border p-3 text-sm transition hover:border-jack-red/90 hover:brightness-110
       max-[500px]:p-2 max-[500px]:gap-3 max-[500px]:text-[13px]
       ${riskContainer[tip.risk]}`}
     >
-      {/* Top: league + season + risk badge */}
+      {/* Top: league + season + badges */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {tip.leagueLogo && (
@@ -43,17 +82,29 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
             <span className="text-[11px] uppercase tracking-wide text-slate-500">
               {tip.league}
               {tip.season ? ` • ${tip.season}` : ""}
-              {` • ${tip.country}`}
             </span>
           </div>
         </div>
-        <span
-          className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide
-          max-[500px]:text-[10px] max-[500px]:px-2 max-[500px]:py-0.5
-          ${riskColor[tip.risk]}`}
-        >
-          {riskLabel[tip.risk]}
-        </span>
+
+        <div className="flex items-center gap-2">
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide
+            max-[500px]:text-[10px] max-[500px]:px-2 max-[500px]:py-0.5
+            ${outcome.className}`}
+            title="Ishod"
+          >
+            {outcome.label}
+          </span>
+
+          <span
+            className={`rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide
+            max-[500px]:text-[10px] max-[500px]:px-2 max-[500px]:py-0.5
+            ${riskColor[tip.risk]}`}
+            title="Rizik"
+          >
+            {riskLabel[tip.risk]}
+          </span>
+        </div>
       </div>
 
       {/* Middle: teams row with logos */}
@@ -68,9 +119,10 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
               />
             )}
             <span className="text-sm font-medium text-slate-100 max-[500px]:text-[13px]">
-              {tip.match.split(" vs. ")[0]}
+              {home}
             </span>
           </div>
+
           <div className="flex items-center gap-2">
             {tip.awayLogo && (
               <img
@@ -80,7 +132,7 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
               />
             )}
             <span className="text-sm font-medium text-slate-100 max-[500px]:text-[13px]">
-              {tip.match.split(" vs. ")[1]}
+              {away}
             </span>
           </div>
         </div>
@@ -95,6 +147,7 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
               {tip.odds.toFixed(2)}
             </span>
           </div>
+
           <div className="text-right max-[500px]:text-left">
             <span className="block text-[11px] text-slate-400 max-[500px]:text-[10px]">
               Početak
@@ -115,6 +168,18 @@ const TipCard: React.FC<{ tip: Tip }> = ({ tip }) => {
           {tip.market}
         </span>
       </div>
+
+      {/* ✅ Result line */}
+      {hasRezultat && (
+        <div className="flex items-center justify-between rounded-xl border border-white/10 bg-black/30 px-3 py-2">
+          <span className="text-[11px] uppercase tracking-wide text-slate-400">
+            Rezultat
+          </span>
+          <span className="text-sm font-semibold text-slate-100">
+            {formatRezultat(tip.rezultat)}
+          </span>
+        </div>
+      )}
 
       {/* Confidence bar */}
       <div className="mt-1 flex items-center gap-3 max-[500px]:mt-0.5">
