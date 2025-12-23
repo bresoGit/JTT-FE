@@ -29,11 +29,18 @@ interface JackDropdownProps {
 }
 
 /**
- * Generic glossy dropdown used for:
- * - country (flag + name)
- * - league (logo + name + season)
- * - match (two team logos + league + time) → variant="match"
+ * iOS Safari zooms the page when focusing an <input> whose font-size is < 16px.
+ * Fix: use text-[16px] on mobile (sm:text-[11px] for desktop) + avoid autoFocus on iOS.
  */
+const isIOSDevice = () => {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const iOS = /iPad|iPhone|iPod/.test(ua);
+  const iPadOS =
+    navigator.platform === "MacIntel" && (navigator as any).maxTouchPoints > 1;
+  return iOS || iPadOS;
+};
+
 const JackDropdown: React.FC<JackDropdownProps> = ({
   label,
   placeholder,
@@ -52,9 +59,29 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
 
   const selected = options.find((o) => o.value === value) || null;
 
+  const isDisabled = disabled || loading;
+
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const ios = React.useMemo(() => isIOSDevice(), []);
+
   const toggleOpen = () => {
-    if (disabled) return;
-    setOpen((prev) => !prev);
+    if (isDisabled) return;
+
+    setOpen((prev) => {
+      const next = !prev;
+
+      // On non-iOS, focus search when opening (nice UX)
+      // On iOS, avoid forced focus to prevent zoom.
+      if (next && searchable && !ios) {
+        setTimeout(() => searchInputRef.current?.focus(), 0);
+      }
+
+      // If closing, reset query
+      if (!next) setQuery("");
+      return next;
+    });
   };
 
   const handleSelect = (v: string) => {
@@ -63,12 +90,10 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
     setQuery("");
   };
 
-  const isDisabled = disabled || loading;
-
   // close when clicking outside
-  const containerRef = React.useRef<HTMLDivElement | null>(null);
   React.useEffect(() => {
     if (!open) return;
+
     const onClick = (e: MouseEvent) => {
       if (!containerRef.current) return;
       if (!containerRef.current.contains(e.target as Node)) {
@@ -76,6 +101,7 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
         setQuery("");
       }
     };
+
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
@@ -139,13 +165,9 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
   };
 
   const splitTeams = (label: string): { home: string; away: string } => {
-    // we expect "Home – Away" (with en dash), but fall back
     const parts = label.split("–");
     if (parts.length >= 2) {
-      return {
-        home: parts[0].trim(),
-        away: parts.slice(1).join("–").trim(),
-      };
+      return { home: parts[0].trim(), away: parts.slice(1).join("–").trim() };
     }
     const hyphenParts = label.split("-");
     if (hyphenParts.length >= 2) {
@@ -185,7 +207,6 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
       );
     }
 
-    // default trigger
     return (
       <div className="flex items-center gap-2 min-w-0">
         {selected && renderIcons(selected)}
@@ -239,7 +260,6 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
       );
     }
 
-    // default option body
     return (
       <div className="flex items-center gap-2 min-w-0">
         {renderIcons(opt)}
@@ -259,7 +279,6 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
     <div className="flex flex-col gap-1 w-full" ref={containerRef}>
       <label className="text-[11px] text-slate-400">{label}</label>
 
-      {/* relative wrapper so dropdown can be absolute and aligned */}
       <div className="relative w-full">
         <button
           type="button"
@@ -292,16 +311,22 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
             className={`absolute left-0 top-full mt-1 z-40 max-h-72 w-full overflow-hidden rounded-xl border border-jack-border bg-black/95 text-xs shadow-[0_0_22px_rgba(0,0,0,0.9)]
             ${variant === "match" ? "sm:text-[13px]" : ""}`}
           >
-            {/* 🔎 search input */}
             {searchable && (
               <div className="border-b border-jack-border/60 bg-black/70 px-2 py-1.5">
                 <input
-                  autoFocus
-                  type="text"
+                  ref={searchInputRef}
+                  // don't autoFocus on iOS to avoid zoom jump
+                  autoFocus={false}
+                  type="search"
+                  inputMode="search"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={searchPlaceholder}
-                  className="w-full rounded-lg bg-black/70 px-2 py-1 text-[11px] text-slate-100 outline-none placeholder:text-slate-500"
+                  className="
+                    w-full rounded-lg bg-black/70 px-2 py-1
+                    text-[16px] sm:text-[11px]
+                    text-slate-100 outline-none placeholder:text-slate-500
+                  "
                 />
               </div>
             )}
@@ -314,7 +339,7 @@ const JackDropdown: React.FC<JackDropdownProps> = ({
               ) : (
                 filteredOptions.map((opt, i) => (
                   <button
-                    key={i}
+                    key={opt.value ?? i}
                     type="button"
                     onClick={() => handleSelect(opt.value)}
                     className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-red-900/30 ${
