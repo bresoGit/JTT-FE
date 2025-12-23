@@ -106,7 +106,7 @@ export default function NavHeader() {
           <button
             type="button"
             onClick={() => navigate("/plan-liga")}
-            className={`hidden sm:inline-flex items-center gap-1 rounded-2xl border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition
+            className={`sm:inline-flex items-center gap-1 rounded-2xl border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition
               ${
                 isPlanner
                   ? "border-red-400 bg-red-900/40 text-red-100 shadow-[0_0_20px_rgba(248,113,113,0.9)]"
